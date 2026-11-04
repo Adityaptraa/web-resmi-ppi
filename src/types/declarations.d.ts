@@ -31,3 +31,4 @@ declare module "jsqr" {
     options?: Options
   ): QRCode | null;
 }
+

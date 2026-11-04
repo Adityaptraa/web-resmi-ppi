@@ -108,20 +108,20 @@ export async function POST(req: NextRequest) {
     }),
     normalizedEmail
       ? prisma.userAccount.findFirst({
-          where: { email: normalizedEmail },
-          select: { id: true },
-        })
+        where: { email: normalizedEmail },
+        select: { id: true },
+      })
       : null,
     normalizedPhone
       ? prisma.userAccount.findFirst({
-          where: {
-            OR: [
-              { phone: normalizedPhone },
-              { phone: normalizedPhone.replace(/^0/, "62") },
-            ],
-          },
-          select: { id: true },
-        })
+        where: {
+          OR: [
+            { phone: normalizedPhone },
+            { phone: normalizedPhone.replace(/^0/, "62") },
+          ],
+        },
+        select: { id: true },
+      })
       : null,
   ]);
 
