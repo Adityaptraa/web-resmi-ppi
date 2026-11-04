@@ -461,13 +461,18 @@ export default function LandingPage() {
         id="hero"
         className="relative w-full min-h-screen min-h-[100dvh] flex flex-col items-center justify-center px-5 pt-20 pb-12 text-center border-b border-zinc-900 overflow-hidden"
       >
-        {/* Foto Formasi Paskibraka PDU Upacara Resmi Asli & Natural */}
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-100"
-          style={{ backgroundImage: `url('/hero-paskibraka.jpg')` }}
+        {/* Foto Formasi Paskibraka PDU Upacara Resmi Asli & Natural (Eager LCP Preloaded) */}
+        <img
+          src="/hero-paskibraka.jpg"
+          alt="Formasi Paskibraka Kabupaten Probolinggo"
+          loading="eager"
+          decoding="sync"
+          // @ts-ignore
+          fetchPriority="high"
+          className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none scale-100"
         />
         {/* Gradient Gelap Netral (Bukan Merah!) Agar Foto Asli Tetap Alami dan Tulisan Terbaca Jelas */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/45 to-[#0a0a0c]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/45 to-[#0a0a0c] pointer-events-none" />
 
         <div className="relative z-10 max-w-2xl mx-auto flex flex-col items-center justify-center space-y-4 px-2">
           {/* Badge Ringkas & Rapi */}
@@ -1316,12 +1321,12 @@ export default function LandingPage() {
               <p className="text-zinc-400">
                 📞 WhatsApp:{" "}
                 <a
-                  href="https://wa.me/6282228368042"
+                  href="https://wa.me/6285176871609"
                   target="_blank"
                   rel="noreferrer"
                   className="text-emerald-400 hover:underline"
                 >
-                  +62 822-2836-8042 (Panitia PPI)
+                  0851-7687-1609 (Helpdesk Panitia PPI)
                 </a>
               </p>
               <p className="text-zinc-400">

@@ -14,6 +14,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" className="scroll-smooth">
+      <head>
+        {/* Preload High-Priority Hero Background Image agar langsung muncul instan */}
+        <link
+          rel="preload"
+          as="image"
+          href="/hero-paskibraka.jpg"
+          // @ts-ignore
+          fetchpriority="high"
+        />
+      </head>
       <body className="min-h-screen bg-[#0a0a0c] text-zinc-100 antialiased">
         {children}
       </body>

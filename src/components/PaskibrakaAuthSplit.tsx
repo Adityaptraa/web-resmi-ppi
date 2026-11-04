@@ -864,15 +864,15 @@ export default function PaskibrakaAuthSplit({
             </div>
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-700 space-y-1">
               <div>
-                <strong>Super Admin WhatsApp:</strong>
+                <strong>Helpdesk Panitia / Admin WhatsApp:</strong>
               </div>
               <a
-                href="https://wa.me/6282228368042?text=Halo%20Super%20Admin%20PPI,%20saya%20butuh%20bantuan%20reset%20password%20panitia"
+                href="https://wa.me/6285176871609?text=Halo%20Admin%20PPI,%20saya%20butuh%20bantuan%20reset%20password%20panitia"
                 target="_blank"
                 rel="noreferrer"
                 className="text-sky-600 hover:underline font-semibold block"
               >
-                +62 822-2836-8042 (Aditya PPI)
+                0851-7687-1609 (Helpdesk Panitia PPI)
               </a>
             </div>
             <button
