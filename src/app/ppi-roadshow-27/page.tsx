@@ -906,9 +906,10 @@ export default function PpiRoadshow27Page() {
 
           <input
             type="text"
+            maxLength={100}
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari nama atau kode peserta..."
+            onChange={(e) => setSearchQuery(e.target.value.slice(0, 100))}
+            placeholder="Cari nama atau kode peserta (maks. 100)..."
             className="w-full sm:w-64 px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:border-red-500 focus:outline-none"
           />
         </div>

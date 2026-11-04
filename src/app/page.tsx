@@ -469,31 +469,32 @@ export default function LandingPage() {
         {/* Gradient Gelap Netral (Bukan Merah!) Agar Foto Asli Tetap Alami dan Tulisan Terbaca Jelas */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/45 to-[#0a0a0c]" />
 
-        <div className="relative z-10 max-w-3xl mx-auto flex flex-col items-center justify-center space-y-5">
+        <div className="relative z-10 max-w-2xl mx-auto flex flex-col items-center justify-center space-y-4 px-2">
           {/* Badge Ringkas & Rapi */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-black/50 backdrop-blur-md border border-white/15 text-[11px] font-semibold tracking-wider text-zinc-200 shadow-md">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/50 backdrop-blur-md border border-white/15 text-[10px] sm:text-xs font-medium text-zinc-300 shadow-sm">
             <span>Purna Paskibraka Indonesia • Kab. Probolinggo</span>
           </div>
 
-          {/* Headline Tegas & Tidak Berdesakan */}
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight drop-shadow-xl">
-            Paskibraka Kabupaten Probolinggo: <br />
-            <span className="text-amber-300">Duta Pancasila &amp; Generasi Tangguh Pengawal Merah Putih</span>
+          {/* Headline Rapi & Tidak Berdesakan */}
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white leading-tight drop-shadow-xl">
+            Paskibraka Kabupaten Probolinggo
+            <span className="block text-amber-300 text-base sm:text-xl lg:text-2xl font-bold mt-1.5">
+              Duta Pancasila &amp; Pengawal Merah Putih
+            </span>
           </h1>
 
-          {/* Sub-headline Ringkas Sesuai Request */}
-          <p className="text-sm sm:text-base text-zinc-200 leading-relaxed max-w-2xl mx-auto drop-shadow font-normal">
-            Portal resmi pusat informasi kegiatan, dokumentasi roadshow sekolah, serta verifikasi kelulusan
-            pra-seleksi calon Paskibraka tingkat Kabupaten Probolinggo di bawah naungan Bakesbangpol &amp; PPI
-            Kabupaten Probolinggo.
+          {/* Sub-headline Ringkas & Jelas */}
+          <p className="text-xs sm:text-sm text-zinc-200 leading-relaxed max-w-lg mx-auto drop-shadow font-normal">
+            Pusat informasi resmi kegiatan, dokumentasi roadshow sekolah, serta verifikasi kelulusan
+            pra-seleksi calon Paskibraka Kabupaten Probolinggo.
           </p>
 
-          {/* Call-to-Action Rapi & Fungsional */}
-          <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+          {/* Call-to-Action 2 Tombol Bersih & Proporsional */}
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2.5 w-full sm:w-auto">
             {/* Tombol 1: Cek Hasil Pra-Seleksi */}
             <Link
               href="/roadshow"
-              className="px-6 py-3.5 rounded-xl font-bold text-xs sm:text-sm bg-red-600 hover:bg-red-500 text-white transition shadow-lg shadow-red-700/30 flex items-center gap-2 active:scale-95"
+              className="w-full sm:w-auto px-5 py-3 rounded-xl font-bold text-xs sm:text-sm bg-red-600 hover:bg-red-500 text-white transition shadow-md shadow-red-700/30 flex items-center justify-center gap-2 active:scale-95"
             >
               <span>📋</span>
               <span>Cek Hasil Pra-Seleksi</span>
@@ -503,76 +504,23 @@ export default function LandingPage() {
             <button
               type="button"
               onClick={() => setShowSuratEdaranModal(true)}
-              className="px-5 py-3.5 rounded-xl font-bold text-xs sm:text-sm bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700 text-zinc-200 hover:text-white backdrop-blur-md transition shadow-md flex items-center gap-2 active:scale-95"
+              className="w-full sm:w-auto px-5 py-3 rounded-xl font-bold text-xs sm:text-sm bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700 text-zinc-200 hover:text-white backdrop-blur-md transition shadow-sm flex items-center justify-center gap-2 active:scale-95"
             >
               <span>📄</span>
               <span>Unduh Surat Edaran</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30">
                 Segera Hadir
               </span>
             </button>
 
-            {/* Tombol Dinamis Admin Jika Ada */}
-            {heroButtons.map((btn) => {
-              const isPrimary = btn.description !== "SECONDARY";
-              const isInternal = (btn.subtitle || "").startsWith("/");
-              return (
-                <div key={btn.id} className="relative group flex items-center gap-1.5">
-                  {isInternal ? (
-                    <Link
-                      href={btn.subtitle || "/roadshow"}
-                      className={`px-5 py-3.5 rounded-xl font-bold text-xs sm:text-sm transition shadow-md ${
-                        isPrimary
-                          ? "bg-red-600 hover:bg-red-500 text-white"
-                          : "bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700 text-zinc-100"
-                      }`}
-                    >
-                      {btn.title}
-                    </Link>
-                  ) : (
-                    <a
-                      href={btn.subtitle || "#"}
-                      target="_blank"
-                      rel="noreferrer"
-                      className={`px-5 py-3.5 rounded-xl font-bold text-xs sm:text-sm transition shadow-md ${
-                        isPrimary
-                          ? "bg-red-600 hover:bg-red-500 text-white"
-                          : "bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700 text-zinc-100"
-                      }`}
-                    >
-                      {btn.title}
-                    </a>
-                  )}
-
-                  {canManageLanding && (
-                    <div className="flex items-center gap-1 bg-zinc-950/90 border border-zinc-700 rounded-lg px-2 py-1">
-                      <button
-                        type="button"
-                        onClick={() => openEditItemModal(btn)}
-                        className="text-[11px] text-sky-400 hover:underline font-semibold"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteItem(btn.id, btn.title)}
-                        className="text-[11px] text-red-400 hover:underline font-semibold"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-
+            {/* Tombol Tambahan Admin (Hanya jika login) */}
             {canManageLanding && (
               <button
                 type="button"
                 onClick={() => openAddItemModal("HERO_BUTTON")}
-                className="px-3.5 py-3 rounded-xl bg-emerald-600/90 hover:bg-emerald-500 text-white font-semibold text-xs transition border border-emerald-400/30"
+                className="px-3 py-2 rounded-xl bg-emerald-600/90 hover:bg-emerald-500 text-white font-semibold text-xs transition border border-emerald-400/30"
               >
-                + Tambah Tombol
+                + Tombol
               </button>
             )}
           </div>

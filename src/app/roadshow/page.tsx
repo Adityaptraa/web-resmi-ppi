@@ -288,19 +288,25 @@ export default function PublicRoadshowPage() {
             </div>
           </div>
 
-          {/* Search Candidate Input */}
-          <div>
+          {/* Search Candidate Input (Dibatasi Maksimal 100 Karakter) */}
+          <div className="relative">
             <input
               type="text"
+              maxLength={100}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => setSearchQuery(e.target.value.slice(0, 100))}
               placeholder={
                 selectedSchoolId === "ALL"
-                  ? "Cari nama kandidat, kode peserta, atau nama sekolah..."
-                  : `Cari nama kandidat atau kode di ${selectedSchool?.namaSekolah || ""}...`
+                  ? "Cari nama kandidat, kode peserta, atau nama sekolah (maks. 100 karakter)..."
+                  : `Cari nama kandidat atau kode di ${selectedSchool?.namaSekolah || ""} (maks. 100 karakter)...`
               }
               className="w-full px-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-white focus:border-red-500 focus:outline-none"
             />
+            {searchQuery.length >= 80 && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-amber-400 font-mono">
+                {searchQuery.length}/100
+              </span>
+            )}
           </div>
 
           {/* Status Bar */}
