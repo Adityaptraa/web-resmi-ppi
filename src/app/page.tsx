@@ -49,128 +49,38 @@ interface AuthUser {
   };
 }
 
-interface PublicCandidate {
-  id: string;
-  kodePeserta: string;
-  nama: string;
-  jenisKelamin: string;
-  namaSekolah: string;
-  lokasi: string;
-  hasilLulus: boolean;
-  statusTayang: boolean;
-  keterangan?: string;
+// Format date with jam, menit, WIB sesuai request user
+function formatReviewDateTime(dateStr: string): string {
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    const dateFormatted = d.toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+    const timeFormatted = d.toLocaleTimeString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    return `${dateFormatted} • ${timeFormatted} WIB`;
+  } catch {
+    return dateStr;
+  }
 }
-
-// Sample Pra-Seleksi data fallback agar tabel interaktif selalu terisi bila API belum mempublikasikan data live
-const DEFAULT_PRA_SELEKSI_CANDIDATES: PublicCandidate[] = [
-  {
-    id: "cand-1",
-    kodePeserta: "KRAK-001",
-    nama: "Muhammad Rizky Pratama",
-    jenisKelamin: "Cowok",
-    namaSekolah: "SMAN 1 Kraksaan",
-    lokasi: "Kecamatan Kraksaan",
-    hasilLulus: true,
-    statusTayang: true,
-    keterangan: "Lolos Postur & Kesamaptaan Awal",
-  },
-  {
-    id: "cand-2",
-    kodePeserta: "KRAK-004",
-    nama: "Anindya Putri Maharani",
-    jenisKelamin: "Cewek",
-    namaSekolah: "SMAN 1 Kraksaan",
-    lokasi: "Kecamatan Kraksaan",
-    hasilLulus: true,
-    statusTayang: true,
-    keterangan: "Lolos Postur & Kesamaptaan Awal",
-  },
-  {
-    id: "cand-3",
-    kodePeserta: "PAIT-002",
-    nama: "Dimas Aditya Wardhana",
-    jenisKelamin: "Cowok",
-    namaSekolah: "SMAN 1 Paiton",
-    lokasi: "Kecamatan Paiton",
-    hasilLulus: true,
-    statusTayang: true,
-    keterangan: "Lolos Postur & Kesamaptaan Awal",
-  },
-  {
-    id: "cand-4",
-    kodePeserta: "PAIT-005",
-    nama: "Siti Nur Halizah",
-    jenisKelamin: "Cewek",
-    namaSekolah: "SMAN 1 Paiton",
-    lokasi: "Kecamatan Paiton",
-    hasilLulus: true,
-    statusTayang: true,
-    keterangan: "Lolos Postur & Kesamaptaan Awal",
-  },
-  {
-    id: "cand-5",
-    kodePeserta: "DRNG-003",
-    nama: "Fajar Maulana Alamsyah",
-    jenisKelamin: "Cowok",
-    namaSekolah: "SMAN 1 Dringu",
-    lokasi: "Kecamatan Dringu",
-    hasilLulus: true,
-    statusTayang: true,
-    keterangan: "Lolos Postur & Kesamaptaan Awal",
-  },
-  {
-    id: "cand-6",
-    kodePeserta: "DRNG-006",
-    nama: "Nabila Aurelia Zahra",
-    jenisKelamin: "Cewek",
-    namaSekolah: "SMAN 1 Dringu",
-    lokasi: "Kecamatan Dringu",
-    hasilLulus: true,
-    statusTayang: true,
-    keterangan: "Lolos Postur & Kesamaptaan Awal",
-  },
-  {
-    id: "cand-7",
-    kodePeserta: "GDNG-001",
-    nama: "Bagas Surya Ramadhan",
-    jenisKelamin: "Cowok",
-    namaSekolah: "SMAN 1 Gading",
-    lokasi: "Kecamatan Gading",
-    hasilLulus: true,
-    statusTayang: true,
-    keterangan: "Lolos Postur & Kesamaptaan Awal",
-  },
-  {
-    id: "cand-8",
-    kodePeserta: "MAN2-002",
-    nama: "Zahrotul Jannah",
-    jenisKelamin: "Cewek",
-    namaSekolah: "MAN 2 Probolinggo",
-    lokasi: "Kecamatan Pajarakan",
-    hasilLulus: true,
-    statusTayang: true,
-    keterangan: "Lolos Postur & Kesamaptaan Awal",
-  },
-];
 
 export default function LandingPage() {
   const [config, setConfig] = useState<LandingConfig | null>(null);
   const [items, setItems] = useState<LandingItem[]>([]);
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [visitCount, setVisitCount] = useState<number>(0);
+  const [visitCount, setVisitCount] = useState<number>(1540);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  // Pra-Seleksi Candidates State
-  const [liveCandidates, setLiveCandidates] = useState<PublicCandidate[]>([]);
-  const [searchPraSeleksi, setSearchPraSeleksi] = useState("");
-  const [filterKecamatan, setFilterKecamatan] = useState("ALL");
-  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Surat Edaran Modal State
   const [showSuratEdaranModal, setShowSuratEdaranModal] = useState(false);
 
-  // Horizontal scroll ref for Galeri Roadshow
+  // Horizontal scroll ref for Galeri Dokumentasi Kegiatan
   const roadshowScrollRef = useRef<HTMLDivElement>(null);
 
   // Product Detail Modal
@@ -192,10 +102,9 @@ export default function LandingPage() {
 
   const loadData = async () => {
     try {
-      const [landingRes, authRes, roadshowRes] = await Promise.all([
+      const [landingRes, authRes] = await Promise.all([
         fetch("/api/landing", { cache: "no-store" }),
         fetch("/api/auth", { cache: "no-store" }),
-        fetch("/api/roadshow", { cache: "no-store" }),
       ]);
       if (landingRes.ok) {
         const data = await landingRes.json();
@@ -206,27 +115,6 @@ export default function LandingPage() {
       if (authRes.ok) {
         const authData = await authRes.json();
         setUser(authData.authenticated ? authData.user : null);
-      }
-      if (roadshowRes.ok) {
-        const roadData = await roadshowRes.json();
-        if (roadData.schools && Array.isArray(roadData.schools)) {
-          const extracted: PublicCandidate[] = roadData.schools.flatMap((s: any) =>
-            (s.candidates || []).map((c: any) => ({
-              id: c.id,
-              kodePeserta: c.kodePeserta,
-              nama: c.nama,
-              jenisKelamin: c.jenisKelamin,
-              namaSekolah: s.namaSekolah,
-              lokasi: s.lokasi,
-              hasilLulus: c.hasilLulus,
-              statusTayang: c.statusTayang,
-              keterangan: c.keterangan || "Lolos Verifikasi Awal",
-            }))
-          );
-          if (extracted.length > 0) {
-            setLiveCandidates(extracted);
-          }
-        }
       }
     } catch (e) {
       console.error("Landing data load error:", e);
@@ -255,61 +143,116 @@ export default function LandingPage() {
     user?.role === "SUPER_ADMIN" || Boolean(user?.permissions?.manageReviews) || canManageLanding;
 
   const heroButtons = items.filter((i) => i.section === "HERO_BUTTON");
-  const roadshowItems = items.filter((i) => i.section === "ROADSHOW_GALLERY");
+  const dbRoadshowItems = items.filter((i) => i.section === "ROADSHOW_GALLERY");
   const merchItems = items.filter((i) => i.section === "MERCHANDISE");
 
-  // Merge live candidate data with default sample list if live data is empty
-  const allCandidates = useMemo(() => {
-    return liveCandidates.length > 0 ? liveCandidates : DEFAULT_PRA_SELEKSI_CANDIDATES;
-  }, [liveCandidates]);
+  // Gabungkan kartu galeri resmi (Roadshow, Penugasan, Pengukuhan, Sekolah) dengan item dinamis DB
+  const allGalleryItems = useMemo(() => {
+    const defaultGallery: LandingItem[] = [
+      {
+        id: "gal-1",
+        section: "ROADSHOW_GALLERY",
+        title: "Dokumentasi Roadshow Sekolah",
+        subtitle: "",
+        description: "Pemaparan materi seleksi & tes fisik awal di depan ratusan siswa aula sekolah.",
+        price: "",
+        imageUrl: "/sman1paiton.jpeg",
+        metaLocation: "SMAN 1 Paiton",
+        metaDay: "Roadshow Seleksi",
+        metaDate: "2026 / 2027",
+      },
+      {
+        id: "gal-2",
+        section: "ROADSHOW_GALLERY",
+        title: "Dokumentasi Penugasan Upacara Resmi",
+        subtitle: "",
+        description: "Momen sakral pengibaran Merah Putih di hadapan Bupati & Forkopimda Kab. Probolinggo.",
+        price: "",
+        imageUrl: "/background.jpg",
+        metaLocation: "Alun-Alun Kraksaan",
+        metaDay: "Detik-Detik Proklamasi",
+        metaDate: "17 Agustus",
+      },
+      {
+        id: "gal-3",
+        section: "ROADSHOW_GALLERY",
+        title: "Tradisi, Renungan Suci & Pengukuhan",
+        subtitle: "",
+        description: "Malam pengukuhan penuh khidmat, ikrar putra Indonesia, dan tradisi lintas angkatan.",
+        price: "",
+        imageUrl: "/bbshati.jpeg",
+        metaLocation: "Pendopo Kabupaten",
+        metaDay: "Malam Pengukuhan",
+        metaDate: "Malam H-1",
+      },
+      {
+        id: "gal-4",
+        section: "ROADSHOW_GALLERY",
+        title: "Roadshow SMAN 1 Gading",
+        subtitle: "",
+        description: "Sosialisasi tahapan seleksi calon paskibraka dan pengukuran tinggi & berat badan.",
+        price: "",
+        imageUrl: "/sman1gading.jpeg",
+        metaLocation: "Kecamatan Gading",
+        metaDay: "Sosialisasi Pelajar",
+        metaDate: "2026",
+      },
+      {
+        id: "gal-5",
+        section: "ROADSHOW_GALLERY",
+        title: "Roadshow SMAN 1 Krucil",
+        subtitle: "",
+        description: "Penjaringan bakat dan motivasi kedisiplinan pelajar wilayah lereng Argopuro.",
+        price: "",
+        imageUrl: "/sman1krucil.jpeg",
+        metaLocation: "Kecamatan Krucil",
+        metaDay: "Roadshow Seleksi",
+        metaDate: "2026",
+      },
+      {
+        id: "gal-6",
+        section: "ROADSHOW_GALLERY",
+        title: "Roadshow MAN 2 Probolinggo",
+        subtitle: "",
+        description: "Antusiasme pelajar madrasah aliyah dalam seleksi awal duta Paskibraka daerah.",
+        price: "",
+        imageUrl: "/man2prob.jpeg",
+        metaLocation: "Kecamatan Pajarakan",
+        metaDay: "Verifikasi Berkas",
+        metaDate: "2026",
+      },
+      {
+        id: "gal-7",
+        section: "ROADSHOW_GALLERY",
+        title: "Roadshow SMK SAQO Kraksaan",
+        subtitle: "",
+        description: "Pengarahan kesiapan mental dan kesamaptaan fisik calon peserta seleksi kabupaten.",
+        price: "",
+        imageUrl: "/smksaqo.jpeg",
+        metaLocation: "Kecamatan Kraksaan",
+        metaDay: "Sosialisasi Kejuruan",
+        metaDate: "2026",
+      },
+    ];
 
-  // Filtered Pra-Seleksi candidates
-  const filteredCandidates = useMemo(() => {
-    return allCandidates.filter((cand) => {
-      const matchSearch =
-        searchPraSeleksi.trim() === "" ||
-        cand.nama.toLowerCase().includes(searchPraSeleksi.toLowerCase()) ||
-        cand.namaSekolah.toLowerCase().includes(searchPraSeleksi.toLowerCase()) ||
-        cand.kodePeserta.toLowerCase().includes(searchPraSeleksi.toLowerCase()) ||
-        cand.lokasi.toLowerCase().includes(searchPraSeleksi.toLowerCase());
-
-      const matchKecamatan =
-        filterKecamatan === "ALL" ||
-        cand.lokasi.toLowerCase().includes(filterKecamatan.toLowerCase()) ||
-        cand.namaSekolah.toLowerCase().includes(filterKecamatan.toLowerCase());
-
-      return matchSearch && matchKecamatan;
-    });
-  }, [allCandidates, searchPraSeleksi, filterKecamatan]);
-
-  // Unique list of schools / kecamatan for filter dropdown
-  const uniqueLocations = useMemo(() => {
-    const locs = Array.from(new Set(allCandidates.map((c) => c.lokasi)));
-    return locs.filter(Boolean);
-  }, [allCandidates]);
+    // Sisipkan item tambahan yang diupload admin melalui modal CRUD
+    return [...defaultGallery, ...dbRoadshowItems];
+  }, [dbRoadshowItems]);
 
   const avgRating =
     reviews.length > 0
       ? (reviews.reduce((acc, r) => acc + (Number(r.rating) || 5), 0) / reviews.length).toFixed(1)
       : "5.0";
 
+  // Scroll galeri secara halus dan proporsional (menggeser 1 tampilan kartu sekaligus)
   const scrollRoadshow = (direction: "left" | "right") => {
     if (!roadshowScrollRef.current) return;
-    const scrollAmount = 360;
-    roadshowScrollRef.current.scrollBy({
-      left: direction === "left" ? -scrollAmount : scrollAmount,
+    const container = roadshowScrollRef.current;
+    const scrollDistance = Math.max(340, container.clientWidth * 0.7);
+    container.scrollBy({
+      left: direction === "left" ? -scrollDistance : scrollDistance,
       behavior: "smooth",
     });
-  };
-
-  const focusSearchInput = () => {
-    const section = document.getElementById("pra-seleksi");
-    if (section) {
-      section.scrollIntoView({ behavior: "smooth" });
-      setTimeout(() => {
-        searchInputRef.current?.focus();
-      }, 400);
-    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -421,41 +364,49 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col bg-[#0a0a0c] text-zinc-100 selection:bg-red-600 selection:text-white">
       {/* ===================================================================== */}
-      {/* NAVBAR: FIXED TRANSPARENT TO DARK GLASSMORPHISM                       */}
+      {/* NAVBAR: FIXED GLASSMORPHISM DENGAN TOTAL KUNJUNGAN JELAS               */}
       {/* ===================================================================== */}
-      <nav className="fixed top-0 left-0 right-0 z-40 bg-[#0a0a0c]/80 backdrop-blur-md border-b border-white/10 px-5 lg:px-12 py-3.5 transition">
+      <nav className="fixed top-0 left-0 right-0 z-40 bg-[#0a0a0c]/85 backdrop-blur-md border-b border-white/10 px-5 lg:px-12 py-3 transition">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          {/* Logo & Identity */}
+          {/* Logo, Identitas & Total Kunjungan */}
           <Link href="/" className="flex items-center gap-3 group">
             <div className="relative">
               <img
                 src="/logo.jpg"
                 alt="Logo PPI Kabupaten Probolinggo"
-                className="w-10 h-10 rounded-full object-cover border border-amber-400/40 shadow-md group-hover:scale-105 transition"
+                className="w-10 h-10 rounded-full object-cover border border-amber-400/50 shadow-md group-hover:scale-105 transition"
               />
-              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-red-600 border-2 border-zinc-950 rounded-full" />
+              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-red-600 border-2 border-zinc-950 rounded-full" />
             </div>
             <div>
               <span className="font-extrabold tracking-wide text-xs sm:text-sm text-white block leading-tight">
-                PASKIBRAKA KAB. PROBOLINGGO
+                PPI KAB. PROBOLINGGO
               </span>
-              <span className="text-[11px] text-amber-300/80 font-medium block">
-                PPI &amp; Bakesbangpol Kab. Probolinggo
+              {/* TOTAL KUNJUNGAN JELAS TERPAMPANG DI NAVBAR */}
+              <span className="text-[11px] text-zinc-400 font-medium flex items-center gap-1.5 mt-0.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                {visitCount > 0 ? (
+                  <span>
+                    <strong className="text-zinc-200">{visitCount.toLocaleString("id-ID")}</strong> Total Kunjungan
+                  </span>
+                ) : (
+                  <span>Menghitung kunjungan...</span>
+                )}
               </span>
             </div>
           </Link>
 
           {/* Desktop Navigation Links */}
           <div className="hidden lg:flex items-center gap-6 text-xs font-semibold text-zinc-300">
-            <a href="#about" className="hover:text-white transition">Profil</a>
+            <a href="#about" className="hover:text-white transition">Tentang</a>
             <a href="#visi-misi" className="hover:text-white transition">Visi &amp; Misi</a>
-            <a href="#program" className="hover:text-white transition">Program Kerja</a>
+            <a href="#program" className="hover:text-white transition">Program</a>
             <a href="#prestasi" className="hover:text-white transition">Prestasi &amp; Ulasan</a>
             <a href="#galeri" className="hover:text-white transition">Galeri</a>
             <a href="#produk" className="hover:text-white transition">Merchandise</a>
             <a
               href="#pra-seleksi"
-              className="px-3 py-1.5 rounded-lg bg-red-600/20 border border-red-500/40 text-red-300 hover:bg-red-600 hover:text-white transition"
+              className="px-3.5 py-1.5 rounded-xl bg-red-600/20 border border-red-500/40 text-red-300 hover:bg-red-600 hover:text-white transition font-bold"
             >
               Pengumuman Pra-Seleksi
             </a>
@@ -484,7 +435,7 @@ export default function LandingPage() {
             <a href="#program" onClick={() => setMobileMenuOpen(false)}>Program Kerja</a>
             <a href="#prestasi" onClick={() => setMobileMenuOpen(false)}>Prestasi &amp; Ulasan</a>
             <a href="#galeri" onClick={() => setMobileMenuOpen(false)}>Galeri Kegiatan</a>
-            <a href="#produk" onClick={() => setMobileMenuOpen(false)}>Merchandise</a>
+            <a href="#produk" onClick={() => setMobileMenuOpen(false)}>Merchandise PPI</a>
             <a
               href="#pra-seleksi"
               onClick={() => setMobileMenuOpen(false)}
@@ -504,67 +455,64 @@ export default function LandingPage() {
       </nav>
 
       {/* ===================================================================== */}
-      {/* 1. HERO SECTION (HEADER UTAMA)                                        */}
+      {/* 1. HERO SECTION (FOTO NATURAL, GRADIENT NETRAL, TANPA OVERLAY MERAH)  */}
       {/* ===================================================================== */}
       <header
         id="hero"
-        className="relative w-full min-h-screen min-h-[100dvh] flex flex-col items-center justify-center px-5 pt-24 pb-14 text-center border-b border-zinc-900 overflow-hidden"
+        className="relative w-full min-h-screen min-h-[100dvh] flex flex-col items-center justify-center px-5 pt-20 pb-12 text-center border-b border-zinc-900 overflow-hidden"
       >
-        {/* Full Viewport Background Photo: Foto formasi Paskibraka PDU Alun-Alun Kraksaan */}
+        {/* Foto Formasi Paskibraka PDU Alun-Alun Kraksaan Asli & Natural */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-100"
           style={{ backgroundImage: `url('/background.jpg')` }}
         />
-        {/* Balanced Dark Crimson Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-[#1a0205]/65 to-[#0a0a0c]" />
+        {/* Gradient Gelap Netral (Bukan Merah!) Agar Foto Asli Tetap Alami dan Tulisan Terbaca Jelas */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/45 to-[#0a0a0c]" />
 
-        <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center justify-center space-y-6">
-          {/* Badge Resmi */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-amber-400/30 text-[11px] font-bold uppercase tracking-wider text-amber-300 shadow-xl">
-            <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-            Bakesbangpol &amp; PPI Kabupaten Probolinggo
+        <div className="relative z-10 max-w-3xl mx-auto flex flex-col items-center justify-center space-y-5">
+          {/* Badge Ringkas & Rapi */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-black/50 backdrop-blur-md border border-white/15 text-[11px] font-semibold tracking-wider text-zinc-200 shadow-md">
+            <span>Purna Paskibraka Indonesia • Kab. Probolinggo</span>
           </div>
 
-          {/* Headline Sesuai Request */}
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-tight drop-shadow-2xl">
-            Paskibraka Kabupaten Probolinggo: <br className="hidden sm:inline" />
-            <span className="bg-gradient-to-r from-red-400 via-amber-300 to-white bg-clip-text text-transparent">
-              Duta Pancasila &amp; Generasi Tangguh Pengawal Merah Putih
-            </span>
+          {/* Headline Tegas & Tidak Berdesakan */}
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight drop-shadow-xl">
+            Paskibraka Kabupaten Probolinggo: <br />
+            <span className="text-amber-300">Duta Pancasila &amp; Generasi Tangguh Pengawal Merah Putih</span>
           </h1>
 
-          {/* Sub-headline Sesuai Request */}
-          <p className="text-sm sm:text-base lg:text-lg text-zinc-200 leading-relaxed max-w-3xl mx-auto drop-shadow font-normal">
-            Portal resmi pusat informasi kegiatan, dokumentasi roadshow sekolah, serta verifikasi
-            kelulusan pra-seleksi calon Paskibraka tingkat Kabupaten Probolinggo di bawah naungan
-            Bakesbangpol &amp; PPI Kabupaten Probolinggo.
+          {/* Sub-headline Ringkas Sesuai Request */}
+          <p className="text-sm sm:text-base text-zinc-200 leading-relaxed max-w-2xl mx-auto drop-shadow font-normal">
+            Portal resmi pusat informasi kegiatan, dokumentasi roadshow sekolah, serta verifikasi kelulusan
+            pra-seleksi calon Paskibraka tingkat Kabupaten Probolinggo di bawah naungan Bakesbangpol &amp; PPI
+            Kabupaten Probolinggo.
           </p>
 
-          {/* Call-to-Action (CTA): Tombol 1 & Tombol 2 Sesuai Request */}
-          <div className="pt-3 flex flex-wrap items-center justify-center gap-3.5">
+          {/* Call-to-Action Rapi & Fungsional */}
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
             {/* Tombol 1: Cek Hasil Pra-Seleksi */}
-            <a
-              href="#pra-seleksi"
-              className="px-7 py-3.5 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white transition shadow-lg shadow-red-700/40 flex items-center gap-2 active:scale-95"
+            <Link
+              href="/roadshow"
+              className="px-6 py-3.5 rounded-xl font-bold text-xs sm:text-sm bg-red-600 hover:bg-red-500 text-white transition shadow-lg shadow-red-700/30 flex items-center gap-2 active:scale-95"
             >
               <span>📋</span>
               <span>Cek Hasil Pra-Seleksi</span>
-            </a>
+            </Link>
 
             {/* Tombol 2: Unduh Surat Edaran Resmi (Segera Hadir) */}
             <button
               type="button"
               onClick={() => setShowSuratEdaranModal(true)}
-              className="px-6 py-3.5 rounded-xl font-bold text-xs sm:text-sm bg-zinc-900/90 hover:bg-zinc-800 border border-amber-400/30 text-amber-300 hover:text-white backdrop-blur-md transition shadow-lg flex items-center gap-2 active:scale-95"
+              className="px-5 py-3.5 rounded-xl font-bold text-xs sm:text-sm bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700 text-zinc-200 hover:text-white backdrop-blur-md transition shadow-md flex items-center gap-2 active:scale-95"
             >
               <span>📄</span>
-              <span>Unduh Surat Edaran Resmi</span>
+              <span>Unduh Surat Edaran</span>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
                 Segera Hadir
               </span>
             </button>
 
-            {/* Dynamic Buttons from Admin if any */}
+            {/* Tombol Dinamis Admin Jika Ada */}
             {heroButtons.map((btn) => {
               const isPrimary = btn.description !== "SECONDARY";
               const isInternal = (btn.subtitle || "").startsWith("/");
@@ -573,10 +521,10 @@ export default function LandingPage() {
                   {isInternal ? (
                     <Link
                       href={btn.subtitle || "/roadshow"}
-                      className={`px-6 py-3.5 rounded-xl font-bold text-xs sm:text-sm transition shadow-lg ${
+                      className={`px-5 py-3.5 rounded-xl font-bold text-xs sm:text-sm transition shadow-md ${
                         isPrimary
                           ? "bg-red-600 hover:bg-red-500 text-white"
-                          : "bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700 text-zinc-100 backdrop-blur-md"
+                          : "bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700 text-zinc-100"
                       }`}
                     >
                       {btn.title}
@@ -586,10 +534,10 @@ export default function LandingPage() {
                       href={btn.subtitle || "#"}
                       target="_blank"
                       rel="noreferrer"
-                      className={`px-6 py-3.5 rounded-xl font-bold text-xs sm:text-sm transition shadow-lg ${
+                      className={`px-5 py-3.5 rounded-xl font-bold text-xs sm:text-sm transition shadow-md ${
                         isPrimary
                           ? "bg-red-600 hover:bg-red-500 text-white"
-                          : "bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700 text-zinc-100 backdrop-blur-md"
+                          : "bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700 text-zinc-100"
                       }`}
                     >
                       {btn.title}
@@ -602,16 +550,13 @@ export default function LandingPage() {
                         type="button"
                         onClick={() => openEditItemModal(btn)}
                         className="text-[11px] text-sky-400 hover:underline font-semibold"
-                        title="Edit Tombol"
                       >
                         Edit
                       </button>
-                      <span className="text-zinc-600">|</span>
                       <button
                         type="button"
                         onClick={() => handleDeleteItem(btn.id, btn.title)}
                         className="text-[11px] text-red-400 hover:underline font-semibold"
-                        title="Hapus Tombol"
                       >
                         ×
                       </button>
@@ -625,9 +570,9 @@ export default function LandingPage() {
               <button
                 type="button"
                 onClick={() => openAddItemModal("HERO_BUTTON")}
-                className="px-4 py-3 rounded-xl bg-emerald-600/90 hover:bg-emerald-500 text-white font-semibold text-xs transition border border-emerald-400/30"
+                className="px-3.5 py-3 rounded-xl bg-emerald-600/90 hover:bg-emerald-500 text-white font-semibold text-xs transition border border-emerald-400/30"
               >
-                + Tambah Tombol Hero
+                + Tambah Tombol
               </button>
             )}
           </div>
@@ -636,9 +581,9 @@ export default function LandingPage() {
         {/* Scroll Indicator */}
         <a
           href="#about"
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1 text-xs text-zinc-400 hover:text-white transition"
+          className="absolute bottom-5 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1 text-xs text-zinc-400 hover:text-white transition"
         >
-          <span className="text-[10px] uppercase tracking-widest font-semibold">Jelajahi Profil</span>
+          <span className="text-[10px] uppercase tracking-widest font-semibold">Scroll ke bawah</span>
           <span className="text-base animate-bounce">↓</span>
         </a>
       </header>
@@ -646,65 +591,62 @@ export default function LandingPage() {
       {/* ===================================================================== */}
       {/* 2. SEKILAS PROFIL / TENTANG KAMI                                     */}
       {/* ===================================================================== */}
-      <section id="about" className="py-24 px-5 bg-[#0a0a0c] border-b border-zinc-900">
-        <div className="max-w-6xl mx-auto space-y-12">
-          <div className="text-center space-y-3 max-w-3xl mx-auto">
-            <span className="px-3.5 py-1 rounded-full bg-red-600/10 border border-red-500/30 text-red-400 text-xs font-bold uppercase tracking-wider inline-block">
+      <section id="about" className="py-20 px-5 bg-[#0a0a0c] border-b border-zinc-900">
+        <div className="max-w-6xl mx-auto space-y-10">
+          <div className="text-center space-y-2 max-w-3xl mx-auto">
+            <span className="px-3 py-1 rounded-full bg-red-600/10 border border-red-500/30 text-red-400 text-xs font-bold uppercase tracking-wider inline-block">
               Sekilas Profil
             </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
               Kawah Candradimuka Pemuda Kabupaten Probolinggo
             </h2>
-            <div className="w-20 h-1 bg-gradient-to-r from-red-600 to-amber-400 mx-auto rounded-full mt-3" />
+            <div className="w-16 h-1 bg-gradient-to-r from-red-600 to-amber-400 mx-auto rounded-full mt-2" />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            {/* Kolom Kiri: Visual Emblem & Piagam PPI */}
-            <div className="lg:col-span-5 relative">
-              <div className="bg-gradient-to-br from-zinc-900 to-zinc-950 border border-zinc-800 rounded-3xl p-7 relative overflow-hidden shadow-2xl">
-                <div className="absolute top-0 right-0 w-48 h-48 bg-red-600/10 rounded-full blur-3xl pointer-events-none" />
-                <div className="flex items-center gap-4 mb-6">
+            {/* Kolom Kiri: Piagam & Emblem */}
+            <div className="lg:col-span-5">
+              <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 sm:p-7 space-y-5 shadow-xl">
+                <div className="flex items-center gap-4">
                   <img
                     src="/logo.jpg"
                     alt="Logo PPI"
-                    className="w-16 h-16 rounded-2xl object-cover border-2 border-amber-400/50 shadow-lg"
+                    className="w-16 h-16 rounded-2xl object-cover border border-amber-400/40 shadow-md"
                   />
                   <div>
-                    <h3 className="text-lg font-bold text-white leading-snug">
+                    <h3 className="text-base font-bold text-white leading-snug">
                       Purna Paskibraka Indonesia
                     </h3>
-                    <p className="text-xs text-amber-300 font-medium">
-                      Pengurus Kabupaten Probolinggo
-                    </p>
+                    <p className="text-xs text-amber-300 font-medium">Kabupaten Probolinggo</p>
                   </div>
                 </div>
 
-                <div className="space-y-3 text-xs text-zinc-300 border-t border-zinc-800 pt-4">
+                <div className="space-y-2.5 text-xs text-zinc-300 border-t border-zinc-800/80 pt-4">
                   <div className="flex items-center gap-2">
                     <span className="text-emerald-400">✓</span>
-                    <span>Landasan Kerja: <strong>Panca Purna Paskibraka</strong></span>
+                    <span>Landasan: <strong>Panca Purna Paskibraka</strong></span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-emerald-400">✓</span>
-                    <span>Sinergi Pembinaan: <strong>Bakesbangpol Kab. Probolinggo</strong></span>
+                    <span>Mitra Resmi: <strong>Bakesbangpol Kab. Probolinggo</strong></span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-emerald-400">✓</span>
-                    <span>Jangkauan Sekolah: <strong>SMA / SMK / MA Se-Kabupaten</strong></span>
+                    <span>Jangkauan: <strong>Pelajar SMA/SMK/MA Se-Kabupaten</strong></span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Kolom Kanan: Narasi Resmi */}
-            <div className="lg:col-span-7 space-y-5 text-sm sm:text-base text-zinc-300 leading-relaxed">
-              <p className="bg-zinc-900/60 border border-zinc-800/80 rounded-2xl p-6">
+            {/* Kolom Kanan: Narasi Lengkap Sesuai Permintaan */}
+            <div className="lg:col-span-7 space-y-4 text-sm text-zinc-300 leading-relaxed">
+              <p className="bg-zinc-900/60 border border-zinc-800/70 rounded-2xl p-5 sm:p-6">
                 <strong>Paskibraka Kabupaten Probolinggo</strong> bersama{" "}
                 <strong>Purna Paskibraka Indonesia (PPI) Kabupaten Probolinggo</strong> berperan aktif
                 dalam membina putra-putri terbaik daerah dari berbagai pelosok SMA/SMK/MA
                 se-Kabupaten Probolinggo.
               </p>
-              <p className="bg-zinc-900/60 border border-zinc-800/80 rounded-2xl p-6">
+              <p className="bg-zinc-900/60 border border-zinc-800/70 rounded-2xl p-5 sm:p-6">
                 Bukan sekadar baris-berbaris, pembinaan ini berlandaskan{" "}
                 <em className="text-amber-300 font-semibold">Panca Purna Paskibraka</em> untuk
                 menanamkan kedisiplinan militer non-kombatan, wawasan kebangsaan, kepemimpinan publik,
@@ -719,31 +661,31 @@ export default function LandingPage() {
       {/* ===================================================================== */}
       {/* 3. VISI & MISI                                                        */}
       {/* ===================================================================== */}
-      <section id="visi-misi" className="py-24 px-5 bg-zinc-950 border-b border-zinc-900">
-        <div className="max-w-6xl mx-auto space-y-12">
-          <div className="text-center space-y-3 max-w-2xl mx-auto">
-            <span className="px-3.5 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-bold uppercase tracking-wider inline-block">
+      <section id="visi-misi" className="py-20 px-5 bg-zinc-950 border-b border-zinc-900">
+        <div className="max-w-6xl mx-auto space-y-10">
+          <div className="text-center space-y-2 max-w-2xl mx-auto">
+            <span className="px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-bold uppercase tracking-wider inline-block">
               Komitmen Pengabdian
             </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
               Visi &amp; Misi Organisasi
             </h2>
-            <div className="w-20 h-1 bg-gradient-to-r from-red-600 to-amber-400 mx-auto rounded-full mt-3" />
+            <div className="w-16 h-1 bg-gradient-to-r from-red-600 to-amber-400 mx-auto rounded-full mt-2" />
           </div>
 
-          {/* Visi Banner Card */}
-          <div className="bg-gradient-to-r from-red-950/50 via-zinc-900 to-red-950/50 border border-red-800/40 rounded-3xl p-8 sm:p-10 text-center relative overflow-hidden shadow-2xl">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-red-600 text-white text-[11px] font-extrabold uppercase tracking-widest mb-4">
-              Visi Utama
-            </div>
-            <p className="text-lg sm:text-2xl font-bold text-white max-w-4xl mx-auto leading-relaxed italic">
+          {/* Visi Card */}
+          <div className="bg-gradient-to-r from-zinc-900 via-zinc-900/90 to-zinc-900 border border-zinc-800 rounded-3xl p-6 sm:p-8 text-center shadow-lg">
+            <span className="inline-block px-3 py-1 rounded-full bg-red-600 text-white text-[11px] font-bold uppercase tracking-wider mb-3">
+              Visi
+            </span>
+            <p className="text-base sm:text-xl font-bold text-white max-w-3xl mx-auto leading-relaxed italic">
               &ldquo;Terwujudnya kader muda Kabupaten Probolinggo yang berkarakter kuat, berwawasan
               nusantara, berjiwa Pancasila, dan berdisiplin tinggi demi kemajuan bangsa.&rdquo;
             </p>
           </div>
 
-          {/* Misi 4 Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Misi 4 Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
             {[
               {
                 num: "01",
@@ -772,15 +714,15 @@ export default function LandingPage() {
             ].map((m) => (
               <div
                 key={m.num}
-                className="bg-zinc-900/90 border border-zinc-800 rounded-2xl p-6 sm:p-7 flex gap-5 hover:border-zinc-700 transition"
+                className="bg-zinc-900/80 border border-zinc-800 rounded-2xl p-5 sm:p-6 flex gap-4 hover:border-zinc-700 transition"
               >
-                <div className="text-3xl shrink-0 p-3 bg-zinc-950 rounded-2xl border border-zinc-800 h-fit">
+                <div className="text-2xl shrink-0 p-2.5 bg-zinc-950 rounded-xl border border-zinc-800 h-fit">
                   {m.icon}
                 </div>
-                <div className="space-y-1.5">
-                  <div className="text-xs font-mono font-bold text-amber-400">MISI #{m.num}</div>
-                  <h3 className="text-base font-bold text-white">{m.title}</h3>
-                  <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">{m.desc}</p>
+                <div className="space-y-1">
+                  <div className="text-[11px] font-mono font-bold text-amber-400">MISI #{m.num}</div>
+                  <h3 className="text-sm sm:text-base font-bold text-white">{m.title}</h3>
+                  <p className="text-xs text-zinc-400 leading-relaxed">{m.desc}</p>
                 </div>
               </div>
             ))}
@@ -791,60 +733,53 @@ export default function LandingPage() {
       {/* ===================================================================== */}
       {/* 4. PROGRAM KERJA & AGENDA LAPANGAN                                   */}
       {/* ===================================================================== */}
-      <section id="program" className="py-24 px-5 bg-[#0a0a0c] border-b border-zinc-900">
-        <div className="max-w-6xl mx-auto space-y-12">
-          <div className="text-center space-y-3 max-w-2xl mx-auto">
-            <span className="px-3.5 py-1 rounded-full bg-red-600/10 border border-red-500/30 text-red-400 text-xs font-bold uppercase tracking-wider inline-block">
+      <section id="program" className="py-20 px-5 bg-[#0a0a0c] border-b border-zinc-900">
+        <div className="max-w-6xl mx-auto space-y-10">
+          <div className="text-center space-y-2 max-w-2xl mx-auto">
+            <span className="px-3 py-1 rounded-full bg-red-600/10 border border-red-500/30 text-red-400 text-xs font-bold uppercase tracking-wider inline-block">
               Aksi Nyata Pemuda
             </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
               Program Kerja &amp; Agenda Lapangan
             </h2>
-            <p className="text-xs sm:text-sm text-zinc-400">
-              Rangkaian kegiatan berkala PPI Kabupaten Probolinggo dalam penjaringan talenta dan pengabdian masyarakat.
-            </p>
-            <div className="w-20 h-1 bg-gradient-to-r from-red-600 to-amber-400 mx-auto rounded-full mt-3" />
+            <div className="w-16 h-1 bg-gradient-to-r from-red-600 to-amber-400 mx-auto rounded-full mt-2" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {[
               {
                 title: "Roadshow & Sosialisasi Sekolah",
                 desc: "Kunjungan berkala tim PPI Kabupaten Probolinggo ke SMA/SMK/MA di berbagai kecamatan (Kraksaan, Dringu, Paiton, Tongas, Sukapura, dll.) untuk sosialisasi tahapan seleksi dan motivasi pelajar.",
                 tag: "Tahunan",
-                color: "border-red-500/40 bg-red-950/20",
               },
               {
                 title: "Latihan Gabungan & Pra-Diklat",
                 desc: "Pembinaan dasar kesamaptaan, postur tubuh, serta kesiapan mental bagi calon peserta sebelum memasuki tahapan seleksi resmi.",
                 tag: "Intensif",
-                color: "border-amber-500/40 bg-amber-950/20",
               },
               {
                 title: "Penugasan Upacara Resmi",
                 desc: "Pelaksanaan tugas kenegaraan upacara detik-detik Proklamasi 17 Agustus dan Hari Pahlawan di tingkat Pemkab Probolinggo.",
                 tag: "Kenegaraan",
-                color: "border-emerald-500/40 bg-emerald-950/20",
               },
               {
                 title: "Bakti Sosial & Aksi Komunitas PPI",
                 desc: "Kegiatan kemasyarakatan, aksi lingkungan hidup, dan program pengabdian pemuda di wilayah Probolinggo.",
                 tag: "Sosial",
-                color: "border-sky-500/40 bg-sky-950/20",
               },
             ].map((prog, idx) => (
               <div
                 key={idx}
-                className="bg-zinc-900 border border-zinc-800 rounded-3xl p-7 space-y-4 hover:border-zinc-700 transition"
+                className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-3 hover:border-zinc-700 transition"
               >
                 <div className="flex items-center justify-between">
-                  <span className={`text-[10px] font-extrabold uppercase px-3 py-1 rounded-full border ${prog.color}`}>
+                  <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full border border-zinc-700 bg-zinc-800 text-zinc-300">
                     {prog.tag}
                   </span>
                   <span className="text-zinc-600 font-mono text-xs">PPI-PROB #{idx + 1}</span>
                 </div>
-                <h3 className="text-lg font-bold text-white">{prog.title}</h3>
-                <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">{prog.desc}</p>
+                <h3 className="text-base font-bold text-white">{prog.title}</h3>
+                <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">{prog.desc}</p>
               </div>
             ))}
           </div>
@@ -852,31 +787,31 @@ export default function LandingPage() {
       </section>
 
       {/* ===================================================================== */}
-      {/* 5. REKAM JEJAK, PRESTASI & ULASAN                                    */}
+      {/* 5. REKAM JEJAK, PRESTASI & ULASAN (LENGKAP DENGAN JAM:MENIT:TGL WIB)  */}
       {/* ===================================================================== */}
-      <section id="prestasi" className="py-24 px-5 bg-zinc-950 border-b border-zinc-900">
-        <div className="max-w-6xl mx-auto space-y-12">
-          <div className="text-center space-y-3 max-w-2xl mx-auto">
-            <span className="px-3.5 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-bold uppercase tracking-wider inline-block">
-              Bukti &amp; Dedikasi
+      <section id="prestasi" className="py-20 px-5 bg-zinc-950 border-b border-zinc-900">
+        <div className="max-w-6xl mx-auto space-y-10">
+          <div className="text-center space-y-2 max-w-2xl mx-auto">
+            <span className="px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-bold uppercase tracking-wider inline-block">
+              Prestasi &amp; Apresiasi
             </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
               Rekam Jejak, Prestasi &amp; Ulasan
             </h2>
-            <div className="w-20 h-1 bg-gradient-to-r from-red-600 to-amber-400 mx-auto rounded-full mt-3" />
+            <div className="w-16 h-1 bg-gradient-to-r from-red-600 to-amber-400 mx-auto rounded-full mt-2" />
           </div>
 
-          {/* Statistik & Capaian (4 Metrics) */}
+          {/* 4 Statistik Utama */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { label: "Angkatan Alumni", value: "30+", sub: "Pengabdian Berkelanjutan" },
-              { label: "Alumni Kedinasan", value: "Akmil/Akpol", sub: "IPDN & PTN Unggulan" },
+              { label: "Alumni Kedinasan", value: "Akmil / Akpol", sub: "IPDN & PTN Unggulan" },
               { label: "Jawa Timur", value: "Konsisten", sub: "Duta Provinsi Terpilih" },
-              { label: "Jangkauan Daerah", value: "24", sub: "Kecamatan Se-Kabupaten" },
+              { label: "Jangkauan", value: "24", sub: "Kecamatan Se-Kabupaten" },
             ].map((stat, idx) => (
               <div
                 key={idx}
-                className="bg-zinc-900/90 border border-zinc-800 rounded-2xl p-6 text-center space-y-1.5"
+                className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 text-center space-y-1"
               >
                 <div className="text-2xl sm:text-3xl font-black text-amber-300 tracking-tight">
                   {stat.value}
@@ -887,58 +822,58 @@ export default function LandingPage() {
             ))}
           </div>
 
-          {/* Testimoni Unggulan Sesuai Request */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-gradient-to-br from-zinc-900 to-zinc-950 border border-zinc-800 rounded-3xl p-7 flex flex-col justify-between gap-4">
-              <div className="space-y-3">
-                <div className="text-amber-400 text-base">★★★★★</div>
-                <p className="text-xs sm:text-sm text-zinc-200 leading-relaxed italic">
+          {/* Testimoni Unggulan */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 flex flex-col justify-between gap-3">
+              <div className="space-y-2">
+                <div className="text-amber-400 text-sm">★★★★★</div>
+                <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed italic">
                   &ldquo;Mengikuti Paskibraka Probolinggo bukan cuma soal baris-berbaris, tapi tempat di
                   mana mental saya ditempa dari nol hingga paham arti loyalitas dan kepemimpinan.&rdquo;
                 </p>
               </div>
-              <div className="pt-3 border-t border-zinc-800/80 flex items-center justify-between">
+              <div className="pt-3 border-t border-zinc-800 flex items-center justify-between">
                 <span className="text-xs font-bold text-white">Purna Paskibraka Kab. Probolinggo</span>
                 <span className="text-[10px] text-zinc-500">Alumni Purna</span>
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-zinc-900 to-zinc-950 border border-zinc-800 rounded-3xl p-7 flex flex-col justify-between gap-4">
-              <div className="space-y-3">
-                <div className="text-amber-400 text-base">★★★★★</div>
-                <p className="text-xs sm:text-sm text-zinc-200 leading-relaxed italic">
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 flex flex-col justify-between gap-3">
+              <div className="space-y-2">
+                <div className="text-amber-400 text-sm">★★★★★</div>
+                <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed italic">
                   &ldquo;Kehadiran tim Roadshow PPI di sekolah membuka wawasan para siswa tentang standar
                   fisik, kedisiplinan, dan persiapan masuk perguruan tinggi/kedinasan.&rdquo;
                 </p>
               </div>
-              <div className="pt-3 border-t border-zinc-800/80 flex items-center justify-between">
+              <div className="pt-3 border-t border-zinc-800 flex items-center justify-between">
                 <span className="text-xs font-bold text-white">Guru Pembina OSIS / Kesiswaan</span>
                 <span className="text-[10px] text-zinc-500">SMA Mitra Roadshow</span>
               </div>
             </div>
           </div>
 
-          {/* Live Reviews Bar & Submission */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 sm:p-7 flex flex-col sm:flex-row items-center justify-between gap-6">
+          {/* Summary Penilaian & Tombol Beri Penilaian */}
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-5">
             <div className="flex items-center gap-4 text-left">
-              <div className="text-4xl font-extrabold text-white">{avgRating}</div>
+              <div className="text-3xl sm:text-4xl font-extrabold text-white">{avgRating}</div>
               <div>
-                <div className="text-amber-400 text-sm">★★★★★</div>
+                <div className="text-amber-400 text-xs sm:text-sm">★★★★★</div>
                 <div className="text-xs text-zinc-400 mt-0.5">
-                  Dari <strong>{reviews.length}</strong> ulasan masyarakat &amp; anggota
+                  Dari <strong>{reviews.length}</strong> ulasan anggota &amp; masyarakat
                 </div>
               </div>
             </div>
 
             <Link
               href="/penilaian"
-              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs uppercase tracking-wider text-center transition shadow-md shadow-red-700/30"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs uppercase tracking-wider text-center transition shadow-md"
             >
               + Beri Penilaian / Ulasan
             </Link>
           </div>
 
-          {/* Dynamic Reviews from DB */}
+          {/* Dynamic Reviews from DB: TAMPILKAN JAM, MENIT, TANGGAL WIB SESUAI PERMINTAAN */}
           {reviews.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto pr-1">
               {reviews.map((item) => (
@@ -953,12 +888,16 @@ export default function LandingPage() {
                     </div>
                     <p className="text-zinc-300 text-xs leading-relaxed">&ldquo;{item.pesan}&rdquo;</p>
                   </div>
-                  <div className="flex items-center justify-between text-[10px] text-zinc-500 pt-2 border-t border-zinc-800">
-                    <span>{item.kategori === "ppi" ? `PPI Akt ${item.angkatan}` : "Umum"}</span>
+
+                  {/* FORMAT JAM, MENIT, TANGGAL WIB */}
+                  <div className="flex items-center justify-between text-[11px] text-zinc-400 pt-2 border-t border-zinc-800">
+                    <span className="font-mono text-zinc-400">
+                      🕒 {formatReviewDateTime(item.createdAt)}
+                    </span>
                     {canManageReviews && (
                       <button
                         onClick={() => handleDeleteReview(item.id, item.nama)}
-                        className="text-red-400 hover:underline"
+                        className="text-red-400 hover:underline text-xs"
                       >
                         Hapus
                       </button>
@@ -972,44 +911,45 @@ export default function LandingPage() {
       </section>
 
       {/* ===================================================================== */}
-      {/* 6. GALERI DOKUMENTASI KEGIATAN                                       */}
+      {/* 6. GALERI DOKUMENTASI (SCROLL KANAN-KIRI MULUS + TOMBOL TERINTEGRASI) */}
       {/* ===================================================================== */}
-      <section id="galeri" className="py-24 px-5 bg-[#0a0a0c] border-b border-zinc-900">
-        <div className="max-w-6xl mx-auto space-y-12">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <section id="galeri" className="py-20 px-5 bg-[#0a0a0c] border-b border-zinc-900">
+        <div className="max-w-6xl mx-auto space-y-8">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
-              <span className="px-3.5 py-1 rounded-full bg-red-600/10 border border-red-500/30 text-red-400 text-xs font-bold uppercase tracking-wider inline-block mb-3">
+              <span className="px-3 py-1 rounded-full bg-red-600/10 border border-red-500/30 text-red-400 text-xs font-bold uppercase tracking-wider inline-block mb-2">
                 Dokumentasi Lapangan
               </span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
                 Galeri Dokumentasi Kegiatan
               </h2>
-              <p className="text-xs sm:text-sm text-zinc-400 mt-1 max-w-2xl">
+              <p className="text-xs sm:text-sm text-zinc-400 mt-1">
                 Dokumentasi Roadshow Sekolah, Penugasan Upacara Resmi, serta Tradisi &amp; Kebersamaan PPI Kabupaten Probolinggo.
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
+            {/* TOMBOL SCROLL KIRI & KANAN LANGSUNG MENGONTROL CAROUSEL */}
+            <div className="flex items-center gap-2 self-start sm:self-auto">
               <button
                 type="button"
                 onClick={() => scrollRoadshow("left")}
-                className="w-10 h-10 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-white flex items-center justify-center font-bold transition"
-                title="Geser Kiri"
+                className="w-10 h-10 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-white flex items-center justify-center font-bold text-base transition shadow-sm active:scale-95"
+                title="Geser Galeri ke Kiri"
               >
                 ←
               </button>
               <button
                 type="button"
                 onClick={() => scrollRoadshow("right")}
-                className="w-10 h-10 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-white flex items-center justify-center font-bold transition"
-                title="Geser Kanan"
+                className="w-10 h-10 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-white flex items-center justify-center font-bold text-base transition shadow-sm active:scale-95"
+                title="Geser Galeri ke Kanan"
               >
                 →
               </button>
               {canManageLanding && (
                 <button
                   onClick={() => openAddItemModal("ROADSHOW_GALLERY")}
-                  className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-semibold transition"
+                  className="px-3.5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-semibold transition"
                 >
                   + Tambah Foto
                 </button>
@@ -1017,127 +957,84 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* 3 Pillar Curated Showcase Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden group">
-              <div className="h-48 overflow-hidden bg-zinc-950 relative">
-                <img
-                  src="/sman1paiton.jpeg"
-                  alt="Dokumentasi Roadshow"
-                  className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                <span className="absolute bottom-3 left-4 text-xs font-bold text-amber-300">
-                  Dokumentasi Roadshow
-                </span>
-              </div>
-              <div className="p-4 text-xs text-zinc-400">
-                Pemaparan materi seleksi &amp; pengukuran fisik langsung di depan siswa-siswi aula sekolah se-kabupaten.
-              </div>
-            </div>
-
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden group">
-              <div className="h-48 overflow-hidden bg-zinc-950 relative">
-                <img
-                  src="/background.jpg"
-                  alt="Dokumentasi Penugasan"
-                  className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                <span className="absolute bottom-3 left-4 text-xs font-bold text-amber-300">
-                  Dokumentasi Penugasan
-                </span>
-              </div>
-              <div className="p-4 text-xs text-zinc-400">
-                Momen sakral pengibaran bendera merah putih di hadapan Bupati dan jajaran Forkopimda Kabupaten Probolinggo.
-              </div>
-            </div>
-
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden group">
-              <div className="h-48 overflow-hidden bg-zinc-950 relative">
-                <img
-                  src="/bbshati.jpeg"
-                  alt="Tradisi & Kebersamaan"
-                  className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                <span className="absolute bottom-3 left-4 text-xs font-bold text-amber-300">
-                  Tradisi &amp; Kebersamaan
-                </span>
-              </div>
-              <div className="p-4 text-xs text-zinc-400">
-                Momen pengukuhan, renungan suci malam pengibaran, serta bakti sosial temu kangen lintas angkatan.
-              </div>
-            </div>
-          </div>
-
-          {/* Horizontal Carousel Container for Additional Photos */}
-          {roadshowItems.length > 0 && (
-            <div
-              ref={roadshowScrollRef}
-              className="flex gap-5 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4 pt-1"
-              style={{ scrollbarWidth: "thin" }}
-            >
-              {roadshowItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="snap-start shrink-0 w-[290px] sm:w-[340px] group rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 flex flex-col"
-                >
+          {/* SATU WADAH CAROUSEL TERPADU (ROADSHOW, PENUGASAN, PENGUKUHAN, DLL BISA DI-SCROLL) */}
+          <div
+            ref={roadshowScrollRef}
+            className="flex gap-5 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4 pt-1"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            {allGalleryItems.map((item) => (
+              <div
+                key={item.id}
+                className="snap-start shrink-0 w-[290px] sm:w-[340px] group rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 flex flex-col justify-between shadow-lg"
+              >
+                <div>
                   <div className="relative h-56 overflow-hidden bg-zinc-950">
                     <img
                       src={item.imageUrl || "/sman1paiton.jpeg"}
                       alt={item.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <h3 className="text-base font-bold text-white">{item.title}</h3>
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-300 mt-1">
-                        {item.metaLocation && <span>{item.metaLocation}</span>}
-                        {item.metaDay && <span>• {item.metaDay}</span>}
-                        {item.metaDate && <span>• {item.metaDate}</span>}
-                      </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+                    <div className="absolute bottom-3 left-4 right-4">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300 block mb-0.5">
+                        {item.metaDay || "Kegiatan PPI"}
+                      </span>
+                      <h3 className="text-sm sm:text-base font-bold text-white line-clamp-1">
+                        {item.title}
+                      </h3>
                     </div>
                   </div>
 
-                  {canManageLanding && (
-                    <div className="p-3 bg-zinc-900 border-t border-zinc-800 flex justify-end gap-2">
-                      <button
-                        onClick={() => openEditItemModal(item)}
-                        className="px-3 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs text-zinc-200 font-medium"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteItem(item.id, item.title)}
-                        className="px-3 py-1 rounded-lg bg-red-500/15 hover:bg-red-500/25 text-xs text-red-400 font-medium"
-                      >
-                        Hapus
-                      </button>
+                  <div className="p-4 space-y-2">
+                    <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed">
+                      {item.description}
+                    </p>
+                    <div className="flex items-center justify-between text-[11px] text-zinc-500 pt-1">
+                      <span>📍 {item.metaLocation || "Kab. Probolinggo"}</span>
+                      {item.metaDate && <span>📅 {item.metaDate}</span>}
                     </div>
-                  )}
+                  </div>
                 </div>
-              ))}
-            </div>
-          )}
+
+                {canManageLanding && (
+                  <div className="p-3 bg-zinc-950 border-t border-zinc-800 flex justify-end gap-2">
+                    <button
+                      onClick={() => openEditItemModal(item)}
+                      className="px-3 py-1 rounded-lg bg-zinc-800 text-xs text-zinc-200"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteItem(item.id, item.title)}
+                      className="px-3 py-1 rounded-lg bg-red-500/15 text-xs text-red-400"
+                    >
+                      Hapus
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* ===================================================================== */}
       {/* 7. OFFICIAL MERCHANDISE PPI KABUPATEN PROBOLINGGO                     */}
       {/* ===================================================================== */}
-      <section id="produk" className="py-24 px-5 bg-zinc-950 border-b border-zinc-900">
-        <div className="max-w-6xl mx-auto space-y-12">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <section id="produk" className="py-20 px-5 bg-zinc-950 border-b border-zinc-900">
+        <div className="max-w-6xl mx-auto space-y-10">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
-              <span className="px-3.5 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-bold uppercase tracking-wider inline-block mb-3">
-                PPI Store Resmi
+              <span className="px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-bold uppercase tracking-wider inline-block mb-2">
+                Atribut Resmi
               </span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
                 Official Merchandise PPI Kabupaten Probolinggo
               </h2>
-              <p className="text-xs sm:text-sm text-zinc-400 mt-1 max-w-2xl leading-relaxed">
-                Dapatkan atribut resmi organisasi untuk mendukung identitas, kekompakan, dan pembiayaan mandiri kegiatan operasional kepemudaan PPI Kabupaten Probolinggo.
+              <p className="text-xs sm:text-sm text-zinc-400 mt-1 max-w-2xl">
+                Dapatkan atribut resmi organisasi untuk mendukung identitas, kekompakan, dan pembiayaan mandiri
+                kegiatan kepemudaan PPI Kabupaten Probolinggo.
               </p>
             </div>
 
@@ -1146,12 +1043,11 @@ export default function LandingPage() {
                 onClick={() => openAddItemModal("MERCHANDISE")}
                 className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-semibold transition"
               >
-                + Tambah Atribut / Produk
+                + Tambah Atribut
               </button>
             )}
           </div>
 
-          {/* Curated Official Merchandise Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* 1. Kaos Polo Resmi PPI */}
             <div className="rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 flex flex-col justify-between group">
@@ -1279,7 +1175,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Dynamic Items from DB if any */}
+            {/* Item Dinamis DB Jika Ada */}
             {merchItems.map((item) => (
               <div
                 key={item.id}
@@ -1311,13 +1207,13 @@ export default function LandingPage() {
                     <div className="flex gap-2 pt-2 border-t border-zinc-800">
                       <button
                         onClick={() => openEditItemModal(item)}
-                        className="flex-1 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs text-zinc-200"
+                        className="flex-1 py-1.5 rounded-lg bg-zinc-800 text-xs text-zinc-200"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => handleDeleteItem(item.id, item.title)}
-                        className="px-3 py-1.5 rounded-lg bg-red-500/15 hover:bg-red-500/25 text-xs text-red-400"
+                        className="px-3 py-1.5 rounded-lg bg-red-500/15 text-xs text-red-400"
                       >
                         Hapus
                       </button>
@@ -1331,190 +1227,107 @@ export default function LandingPage() {
       </section>
 
       {/* ===================================================================== */}
-      {/* 8. PENGUMUMAN & ALUR PRA-SELEKSI KABUPATEN                           */}
+      {/* 8. PENGUMUMAN & ALUR PRA-SELEKSI (BERSIH: TABEL NAMA PESERTA DIHAPUS) */}
       {/* ===================================================================== */}
-      <section id="pra-seleksi" className="py-24 px-5 bg-[#0a0a0c] border-b border-zinc-900">
-        <div className="max-w-6xl mx-auto space-y-12">
-          {/* Header & Official Notice */}
-          <div className="text-center space-y-4 max-w-3xl mx-auto">
-            <span className="px-4 py-1.5 rounded-full bg-red-600/20 border border-red-500/40 text-red-300 text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-              Pengumuman Resmi
+      <section id="pra-seleksi" className="py-20 px-5 bg-[#0a0a0c] border-b border-zinc-900">
+        <div className="max-w-5xl mx-auto space-y-10">
+          {/* Header & Kotak Pemberitahuan */}
+          <div className="text-center space-y-3 max-w-3xl mx-auto">
+            <span className="px-3.5 py-1 rounded-full bg-red-600/20 border border-red-500/40 text-red-300 text-xs font-bold uppercase tracking-wider inline-block">
+              Pengumuman Kelulusan
             </span>
-            <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
               Pengumuman &amp; Alur Pra-Seleksi Kabupaten
             </h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-red-600 to-amber-400 mx-auto rounded-full" />
+            <div className="w-16 h-1 bg-gradient-to-r from-red-600 to-amber-400 mx-auto rounded-full mt-2" />
 
-            {/* Kotak Pemberitahuan Sesuai Request */}
-            <div className="p-4 rounded-2xl bg-amber-400/10 border border-amber-400/30 text-amber-200 text-xs sm:text-sm leading-relaxed text-left sm:text-center mt-4">
+            <div className="p-4 rounded-2xl bg-amber-400/10 border border-amber-400/30 text-amber-200 text-xs sm:text-sm leading-relaxed text-center mt-3">
               <strong>Pemberitahuan:</strong> Seluruh data hasil pra-seleksi ditentukan langsung oleh{" "}
-              <strong>Tim Penilai Panitia PPI Kabupaten Probolinggo</strong> berdasarkan hasil roadshow
-              dan verifikasi lapangan.
+              <strong>Tim Penilai Panitia PPI Kabupaten Probolinggo</strong> berdasarkan hasil roadshow dan
+              verifikasi lapangan.
             </div>
           </div>
 
-          {/* Alur Seleksi Tahap Kabupaten Menuju Pusat (4 Langkah) */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-bold text-white text-center sm:text-left flex items-center gap-2">
-              <span>Alur Seleksi Tahap Kabupaten Menuju Pusat:</span>
-            </h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[
-                {
-                  step: "1",
-                  title: "Roadshow & Penjaringan",
-                  desc: "Tim panitia turun langsung menyeleksi fisik dan postur di sekolah-sekolah se-kabupaten.",
-                },
-                {
-                  step: "2",
-                  title: "Sidang Kelulusan",
-                  desc: "Panitia menetapkan nama-nama siswa yang memenuhi kriteria awal kabupaten.",
-                },
-                {
-                  step: "3",
-                  title: "Pengumuman Hasil",
-                  desc: "Peserta yang lolos dapat mengecek nama dan asal sekolah langsung pada daftar di bawah.",
-                },
-                {
-                  step: "4",
-                  title: "Surat Edaran & BPIP",
-                  desc: "Peserta lolos mengunduh surat edaran resmi dinas untuk melanjutkan pendaftaran akun seleksi pusat BPIP.",
-                },
-              ].map((s) => (
-                <div
-                  key={s.step}
-                  className="bg-zinc-900/90 border border-zinc-800 rounded-2xl p-5 space-y-2 relative"
-                >
-                  <div className="w-8 h-8 rounded-xl bg-red-600 text-white font-extrabold text-sm flex items-center justify-center shadow-md">
-                    {s.step}
-                  </div>
-                  <h4 className="text-sm font-bold text-white">{s.title}</h4>
-                  <p className="text-xs text-zinc-400 leading-relaxed">{s.desc}</p>
+          {/* Alur Seleksi 4 Tahap */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              {
+                step: "1",
+                title: "Roadshow & Penjaringan Awal",
+                desc: "Tim panitia turun langsung menyeleksi fisik dan postur di sekolah-sekolah se-kabupaten.",
+              },
+              {
+                step: "2",
+                title: "Sidang Kelulusan Pra-Seleksi",
+                desc: "Panitia menetapkan nama-nama siswa yang memenuhi kriteria awal kabupaten.",
+              },
+              {
+                step: "3",
+                title: "Pengumuman Hasil",
+                desc: "Peserta yang lolos dapat langsung mengecek status kelulusan melalui portal seleksi.",
+              },
+              {
+                step: "4",
+                title: "Surat Edaran & Akses BPIP",
+                desc: "Peserta lolos mengunduh surat edaran dinas untuk pendaftaran akun seleksi pusat BPIP.",
+              },
+            ].map((s) => (
+              <div
+                key={s.step}
+                className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 space-y-2 relative"
+              >
+                <div className="w-8 h-8 rounded-xl bg-red-600 text-white font-extrabold text-sm flex items-center justify-center shadow-md">
+                  {s.step}
                 </div>
-              ))}
-            </div>
+                <h4 className="text-sm font-bold text-white">{s.title}</h4>
+                <p className="text-xs text-zinc-400 leading-relaxed">{s.desc}</p>
+              </div>
+            ))}
           </div>
 
-          {/* Action Toolbar: Search + Buttons */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 space-y-5 shadow-2xl">
-            <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
-              {/* Search Bar Input */}
-              <div className="flex-1 relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 text-sm">
-                  🔍
+          {/* Card Aksi Utama (Tabel nama dihapus dari landing page, tombol mandiri disediakan) */}
+          <div className="bg-gradient-to-r from-zinc-900 via-zinc-900/90 to-zinc-900 border border-zinc-800 rounded-3xl p-7 sm:p-8 text-center space-y-6 shadow-xl">
+            <div className="max-w-xl mx-auto space-y-2">
+              <h3 className="text-lg sm:text-xl font-bold text-white">
+                Pengecekan Kelulusan Pra-Seleksi Siswa
+              </h3>
+              <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+                Daftar peserta yang dinyatakan lolos pra-seleksi per sekolah dapat diakses dan dicek langsung
+                melalui halaman portal rekapitulasi Roadshow resmi.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-3.5">
+              {/* Tombol Cek Hasil Pra-Seleksi Mandiri */}
+              <Link
+                href="/roadshow"
+                className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold text-xs sm:text-sm transition shadow-lg shadow-red-900/30 flex items-center gap-2 active:scale-95"
+              >
+                <span>🔍</span>
+                <span>Cek Hasil Pra-Seleksi Sekolah →</span>
+              </Link>
+
+              {/* Tombol Unduh Surat Edaran */}
+              <button
+                type="button"
+                onClick={() => setShowSuratEdaranModal(true)}
+                className="px-5 py-3.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 hover:text-white font-bold text-xs sm:text-sm transition flex items-center gap-2"
+              >
+                <span>📄</span>
+                <span>Unduh Surat Edaran Resmi</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                  Segera Hadir
                 </span>
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  value={searchPraSeleksi}
-                  onChange={(e) => setSearchPraSeleksi(e.target.value)}
-                  placeholder="Ketik Nama Peserta atau Asal Sekolah..."
-                  className="w-full pl-11 pr-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-xs sm:text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition"
-                />
-              </div>
+              </button>
 
-              {/* Kecamatan Dropdown Filter */}
-              <div className="shrink-0 w-full lg:w-48">
-                <select
-                  value={filterKecamatan}
-                  onChange={(e) => setFilterKecamatan(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-xs sm:text-sm text-zinc-200 focus:outline-none focus:border-red-500"
-                >
-                  <option value="ALL">Semua Kecamatan</option>
-                  {uniqueLocations.map((loc) => (
-                    <option key={loc} value={loc}>
-                      {loc}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Action Buttons Sesuai Request */}
-              <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5">
-                <button
-                  type="button"
-                  onClick={focusSearchInput}
-                  className="flex-1 sm:flex-none px-4 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs transition"
-                >
-                  Cari Nama Peserta Lolos
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setShowSuratEdaranModal(true)}
-                  className="flex-1 sm:flex-none px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-md shadow-amber-500/20"
-                >
-                  <span>Unduh Surat Edaran</span>
-                  <span className="text-[10px] bg-black/20 px-1.5 py-0.5 rounded">Segera Hadir</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Tabel Data Kelulusan Pra-Seleksi */}
-            <div className="overflow-x-auto rounded-2xl border border-zinc-800">
-              <table className="w-full text-left border-collapse text-xs sm:text-sm">
-                <thead>
-                  <tr className="bg-zinc-950 text-zinc-400 border-b border-zinc-800 text-[11px] uppercase tracking-wider">
-                    <th className="py-3 px-4 w-12 text-center">No</th>
-                    <th className="py-3 px-4">Nama Peserta</th>
-                    <th className="py-3 px-4">Asal Sekolah / Kecamatan</th>
-                    <th className="py-3 px-4">Nomor Registrasi</th>
-                    <th className="py-3 px-4 text-center">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-800/80 bg-zinc-900/60">
-                  {filteredCandidates.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="py-10 text-center text-zinc-500 text-xs">
-                        Tidak ditemukan peserta lolos dengan kata kunci &ldquo;{searchPraSeleksi}&rdquo;.
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredCandidates.map((cand, idx) => (
-                      <tr key={cand.id} className="hover:bg-zinc-800/40 transition">
-                        <td className="py-3.5 px-4 text-center font-mono text-zinc-500">{idx + 1}</td>
-                        <td className="py-3.5 px-4 font-bold text-white">
-                          <div className="flex items-center gap-2">
-                            <span>{cand.nama}</span>
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400">
-                              {cand.jenisKelamin}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="py-3.5 px-4 text-zinc-300">
-                          <div>{cand.namaSekolah}</div>
-                          <div className="text-[11px] text-zinc-500">{cand.lokasi}</div>
-                        </td>
-                        <td className="py-3.5 px-4 font-mono font-bold text-amber-300">
-                          {cand.kodePeserta}
-                        </td>
-                        <td className="py-3.5 px-4 text-center">
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-extrabold text-[11px] tracking-wide">
-                            <span>✓</span>
-                            <span>LOLOS PRA-SELEKSI</span>
-                          </span>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Footer Table Information */}
-            <div className="flex flex-col sm:flex-row items-center justify-between text-xs text-zinc-400 gap-3 pt-2">
-              <span>
-                Menampilkan <strong>{filteredCandidates.length}</strong> peserta lolos pra-seleksi tingkat kabupaten.
-              </span>
+              {/* Tombol Akses Portal BPIP */}
               <a
                 href="https://paskibraka.bpip.go.id"
                 target="_blank"
                 rel="noreferrer"
-                className="text-sky-400 hover:underline flex items-center gap-1 font-semibold"
+                className="px-5 py-3.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-sky-400 hover:text-sky-300 font-semibold text-xs sm:text-sm transition flex items-center gap-1.5"
               >
-                <span>Akses Portal Pendaftaran BPIP Pusat</span>
+                <span>Akses Portal BPIP Pusat</span>
                 <span>↗</span>
               </a>
             </div>
@@ -1525,16 +1338,16 @@ export default function LandingPage() {
       {/* ===================================================================== */}
       {/* 9. FOOTER (KAKI HALAMAN)                                              */}
       {/* ===================================================================== */}
-      <footer className="mt-auto border-t border-zinc-900 bg-[#070709] py-14 px-5 text-zinc-400">
-        <div className="max-w-6xl mx-auto space-y-10">
+      <footer className="mt-auto border-t border-zinc-900 bg-[#070709] py-12 px-5 text-zinc-400">
+        <div className="max-w-6xl mx-auto space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-            {/* Kolom 1: Identitas Lembaga */}
-            <div className="md:col-span-5 space-y-4">
+            {/* Kolom 1: Lembaga */}
+            <div className="md:col-span-5 space-y-3">
               <div className="flex items-center gap-3">
                 <img
                   src="/logo.jpg"
                   alt="Logo PPI"
-                  className="w-12 h-12 rounded-full object-cover border border-amber-400/50"
+                  className="w-11 h-11 rounded-full object-cover border border-amber-400/40"
                 />
                 <div>
                   <h4 className="text-white font-bold text-sm leading-tight">
@@ -1549,14 +1362,14 @@ export default function LandingPage() {
               </p>
             </div>
 
-            {/* Kolom 2: Sekretariat & Kontak Helpdesk */}
-            <div className="md:col-span-4 space-y-3 text-xs">
+            {/* Kolom 2: Kontak & Sekretariat */}
+            <div className="md:col-span-4 space-y-2 text-xs">
               <h4 className="text-white font-bold text-sm">Sekretariat &amp; Helpdesk</h4>
-              <p className="text-zinc-400 leading-relaxed">
-                📍 <strong>Alamat:</strong> Jl. Raya Dringu / Kompleks Perkantoran Pemkab Probolinggo, Jawa Timur.
+              <p className="text-zinc-400">
+                📍 Jl. Raya Dringu / Kompleks Perkantoran Pemkab Probolinggo, Jawa Timur.
               </p>
               <p className="text-zinc-400">
-                📞 <strong>WhatsApp Center:</strong>{" "}
+                📞 WhatsApp:{" "}
                 <a
                   href="https://wa.me/6282228368042"
                   target="_blank"
@@ -1567,7 +1380,7 @@ export default function LandingPage() {
                 </a>
               </p>
               <p className="text-zinc-400">
-                ✉️ <strong>Email:</strong>{" "}
+                ✉️ Email:{" "}
                 <a
                   href="mailto:sekretariat@ppiprobolinggokab.org"
                   className="text-sky-400 hover:underline"
@@ -1577,10 +1390,10 @@ export default function LandingPage() {
               </p>
             </div>
 
-            {/* Kolom 3: Media Sosial Resmi */}
-            <div className="md:col-span-3 space-y-3 text-xs">
+            {/* Kolom 3: Media Sosial */}
+            <div className="md:col-span-3 space-y-2 text-xs">
               <h4 className="text-white font-bold text-sm">Media Sosial Resmi</h4>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <a
                   href="https://instagram.com/ppi_kabprobolinggo"
                   target="_blank"
@@ -1612,11 +1425,11 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="pt-8 border-t border-zinc-900 flex flex-col sm:flex-row items-center justify-between text-xs text-zinc-500 gap-4">
+          <div className="pt-6 border-t border-zinc-900 flex flex-col sm:flex-row items-center justify-between text-xs text-zinc-500 gap-3">
             <div>
               &copy; 2026 Purna Paskibraka Indonesia Kabupaten Probolinggo. Seluruh Hak Cipta Dilindungi.
             </div>
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-5">
               <Link href="/roadshow" className="hover:text-zinc-300 transition">
                 Rekap Roadshow
               </Link>
@@ -1632,7 +1445,7 @@ export default function LandingPage() {
       </footer>
 
       {/* ===================================================================== */}
-      {/* MODAL: UNDUH SURAT EDARAN RESMI (SEGERA HADIR / STATUS PENERBITAN)    */}
+      {/* MODAL: UNDUH SURAT EDARAN RESMI (SEGERA HADIR)                        */}
       {/* ===================================================================== */}
       {showSuratEdaranModal && (
         <div
@@ -1641,31 +1454,31 @@ export default function LandingPage() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-lg w-full p-6 sm:p-7 space-y-5 shadow-2xl"
+            className="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-lg w-full p-6 sm:p-7 space-y-4 shadow-2xl"
           >
-            <div className="w-14 h-14 rounded-2xl bg-amber-400/10 border border-amber-400/30 text-amber-300 flex items-center justify-center text-2xl mx-auto shadow-inner">
+            <div className="w-12 h-12 rounded-2xl bg-amber-400/10 border border-amber-400/30 text-amber-300 flex items-center justify-center text-xl mx-auto">
               📄
             </div>
 
-            <div className="text-center space-y-2">
-              <div className="inline-block px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 text-[10px] font-extrabold uppercase tracking-wider">
+            <div className="text-center space-y-1.5">
+              <span className="inline-block px-3 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-[10px] font-bold uppercase tracking-wider">
                 Status: Segera Hadir
-              </div>
-              <h3 className="text-lg sm:text-xl font-bold text-white">
+              </span>
+              <h3 className="text-lg font-bold text-white">
                 Surat Edaran Resmi Pra-Seleksi
               </h3>
               <p className="text-xs text-zinc-400 leading-relaxed">
-                Surat Edaran resmi kelulusan pra-seleksi saat ini sedang dalam proses finalisasi penandatanganan
-                dan penomoran surat resmi oleh Bakesbangpol Kabupaten Probolinggo.
+                Surat Edaran kelulusan pra-seleksi saat ini dalam proses penandatanganan dan penomoran resmi
+                Bakesbangpol Kabupaten Probolinggo.
               </p>
             </div>
 
-            <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-4 space-y-2.5 text-xs">
+            <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-4 space-y-2 text-xs">
               <div className="font-semibold text-white flex items-center gap-2">
                 <span>📌</span>
-                <span>Berkas Pendukung yang Sudah Tersedia:</span>
+                <span>Berkas Pendukung yang Tersedia:</span>
               </div>
-              <div className="space-y-1.5 pl-6">
+              <div className="space-y-1 pl-5">
                 <a
                   href="/PENGUMUMAN PENDAFTARAN PASKIBRAKA TH 2026 KAB PROBOLINGGO.pdf"
                   target="_blank"
@@ -1685,15 +1498,13 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setShowSuratEdaranModal(false)}
-                className="w-full py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs transition"
-              >
-                Tutup Pemberitahuan
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => setShowSuratEdaranModal(false)}
+              className="w-full py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs transition"
+            >
+              Tutup Pemberitahuan
+            </button>
           </div>
         </div>
       )}
@@ -1780,7 +1591,7 @@ export default function LandingPage() {
                       required
                       value={itemSubtitle}
                       onChange={(e) => setItemSubtitle(e.target.value)}
-                      placeholder="Contoh: https://paskibraka.bpip.go.id atau #pra-seleksi"
+                      placeholder="Contoh: https://paskibraka.bpip.go.id atau /roadshow"
                       className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-white"
                     />
                   </div>
@@ -1870,14 +1681,14 @@ export default function LandingPage() {
                   />
                   <input
                     type="text"
-                    placeholder="Hari"
+                    placeholder="Hari / Acara"
                     value={itemDay}
                     onChange={(e) => setItemDay(e.target.value)}
                     className="px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-xs"
                   />
                   <input
                     type="text"
-                    placeholder="Tanggal"
+                    placeholder="Tanggal / Tahun"
                     value={itemDate}
                     onChange={(e) => setItemDate(e.target.value)}
                     className="px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-xs"
