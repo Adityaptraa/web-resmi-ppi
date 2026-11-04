@@ -303,7 +303,7 @@ export default function PaskibrakaAuthSplit({
       {/* PANEL KIRI: ALA-ALA PASKIBRAKA / PPI KABUPATEN PROBOLINGGO            */}
       {/* (GRADIENT MERAH MARUN/CRIMSON, LOGO PPI, NARRATIF RESMI, DEKORATIF)  */}
       {/* ===================================================================== */}
-      <div className="w-full lg:w-[38%] min-h-[320px] lg:min-h-screen bg-gradient-to-br from-[#800000] via-[#9e0b1c] to-[#580009] text-white flex flex-col justify-between p-6 sm:p-10 lg:p-12 relative overflow-hidden shrink-0 shadow-2xl">
+      <div className="w-full lg:w-[38%] min-h-[360px] lg:min-h-screen bg-gradient-to-br from-[#800000] via-[#9e0b1c] to-[#580009] text-white flex flex-col items-center justify-center p-6 sm:p-10 lg:p-12 relative overflow-hidden shrink-0 shadow-2xl">
         {/* Subtle Decorative Background Circles & Rings ala Govt Modern */}
         <div className="absolute -top-20 -left-20 w-80 h-80 rounded-full border border-white/10 pointer-events-none" />
         <div className="absolute -top-10 -left-10 w-96 h-96 rounded-full border border-white/5 pointer-events-none" />
@@ -317,10 +317,10 @@ export default function PaskibrakaAuthSplit({
           className="absolute inset-0 w-full h-full object-cover opacity-10 mix-blend-overlay pointer-events-none"
         />
 
-        {/* Center Content: Logo & Title Resmi (Clean & Minimalist) */}
-        <div className="relative z-10 my-auto py-10 lg:py-0 flex flex-col items-center lg:items-start text-center lg:text-left">
+        {/* Center Content: Logo & Title Resmi (Clean, Minimalist, Centered) */}
+        <div className="relative z-10 my-auto py-10 lg:py-0 flex flex-col items-center justify-center text-center max-w-sm mx-auto">
           {/* Logo PPI Official with Gold & White Ring */}
-          <div className="relative mb-6">
+          <div className="relative mb-6 flex flex-col items-center">
             <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full p-1.5 bg-gradient-to-tr from-amber-400 via-white to-amber-300 shadow-2xl shadow-black/40 flex items-center justify-center">
               <img
                 src="/logo.jpg"
@@ -334,14 +334,14 @@ export default function PaskibrakaAuthSplit({
           </div>
 
           {/* Heading Resmi PPI */}
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight text-center">
             Purna Paskibraka Indonesia
           </h1>
-          <p className="text-base sm:text-lg font-bold text-amber-300 mt-1">
+          <p className="text-base sm:text-lg font-bold text-amber-300 mt-1 text-center">
             Kabupaten Probolinggo
           </p>
 
-          <div className="w-16 h-1 bg-gradient-to-r from-amber-400 to-white/30 rounded-full my-4" />
+          <div className="w-16 h-1 bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 rounded-full my-4 mx-auto" />
         </div>
       </div>
 

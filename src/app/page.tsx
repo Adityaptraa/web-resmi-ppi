@@ -478,9 +478,6 @@ export default function LandingPage() {
           {/* Headline Rapi & Tidak Berdesakan */}
           <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white leading-tight drop-shadow-xl">
             Paskibraka Kabupaten Probolinggo
-            <span className="block text-amber-300 text-base sm:text-xl lg:text-2xl font-bold mt-1.5">
-              Duta Pancasila &amp; Pengawal Merah Putih
-            </span>
           </h1>
 
           {/* Sub-headline Ringkas & Jelas */}
