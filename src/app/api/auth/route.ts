@@ -17,18 +17,27 @@ import {
 import { firebasePush, UMUM_RTDB_URL } from "@/lib/firebase";
 
 export async function GET(req: NextRequest) {
-  await ensureSeeded();
-
-  // Endpoint to obtain cryptographically signed Captcha for client form
+  // Fast path: Endpoint to obtain cryptographically signed Captcha for client form
+  // Evaluated BEFORE database seeding or locks so it returns instantaneously (<1ms)
   const { searchParams } = new URL(req.url);
   if (searchParams.get("action") === "captcha") {
     const captcha = generateSignedCaptcha();
-    return NextResponse.json({
-      success: true,
-      code: captcha.code,
-      token: captcha.token,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        code: captcha.code,
+        token: captcha.token,
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+          Pragma: "no-cache",
+        },
+      }
+    );
   }
+
+  await ensureSeeded();
 
   const session = getServerSession();
   if (!session) {
@@ -110,11 +119,19 @@ export async function POST(req: NextRequest) {
   // =========================================================================
   if (action === "captcha" || action === "get_captcha") {
     const captcha = generateSignedCaptcha();
-    return NextResponse.json({
-      success: true,
-      code: captcha.code,
-      token: captcha.token,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        code: captcha.code,
+        token: captcha.token,
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+          Pragma: "no-cache",
+        },
+      }
+    );
   }
 
   // =========================================================================
