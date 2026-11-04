@@ -293,18 +293,34 @@ export default function PublicRoadshowPage() {
             <input
               type="text"
               maxLength={100}
-              value={searchQuery}
+              value={searchQuery.slice(0, 100)}
               onChange={(e) => setSearchQuery(e.target.value.slice(0, 100))}
+              onPaste={(e) => {
+                const pasted = e.clipboardData.getData("text") || "";
+                if ((searchQuery.length + pasted.length) > 100) {
+                  e.preventDefault();
+                  const remaining = 100 - searchQuery.length;
+                  if (remaining > 0) {
+                    setSearchQuery((prev) => (prev + pasted.slice(0, remaining)).slice(0, 100));
+                  }
+                }
+              }}
               placeholder={
                 selectedSchoolId === "ALL"
                   ? "Cari nama kandidat, kode peserta, atau nama sekolah (maks. 100 karakter)..."
                   : `Cari nama kandidat atau kode di ${selectedSchool?.namaSekolah || ""} (maks. 100 karakter)...`
               }
-              className="w-full px-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-white focus:border-red-500 focus:outline-none"
+              className="w-full pl-4 pr-24 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-white focus:border-red-500 focus:outline-none"
             />
-            {searchQuery.length >= 80 && (
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-amber-400 font-mono">
-                {searchQuery.length}/100
+            {searchQuery.length > 0 && (
+              <span
+                className={`absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono transition ${
+                  searchQuery.length >= 100
+                    ? "font-bold text-red-400 bg-red-950/80 px-2 py-0.5 rounded border border-red-800"
+                    : "text-zinc-500"
+                }`}
+              >
+                {searchQuery.length >= 100 ? "100/100 (Maksimal)" : `${searchQuery.length}/100`}
               </span>
             )}
           </div>

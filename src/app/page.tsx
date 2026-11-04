@@ -461,10 +461,10 @@ export default function LandingPage() {
         id="hero"
         className="relative w-full min-h-screen min-h-[100dvh] flex flex-col items-center justify-center px-5 pt-20 pb-12 text-center border-b border-zinc-900 overflow-hidden"
       >
-        {/* Foto Formasi Paskibraka PDU Alun-Alun Kraksaan Asli & Natural */}
+        {/* Foto Formasi Paskibraka PDU Upacara Resmi Asli & Natural */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-100"
-          style={{ backgroundImage: `url('/background.jpg')` }}
+          style={{ backgroundImage: `url('/hero-paskibraka.jpg')` }}
         />
         {/* Gradient Gelap Netral (Bukan Merah!) Agar Foto Asli Tetap Alami dan Tulisan Terbaca Jelas */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/45 to-[#0a0a0c]" />

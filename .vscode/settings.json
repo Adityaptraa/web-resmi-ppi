@@ -1,4 +1,7 @@
 {
-  "git.decorations.enabled": false
+  "explorer.decorations.colors": false,
+  "explorer.decorations.badges": false,
+  "git.decorations.enabled": false,
+  "problems.decorations.enabled": false,
+  "typescript.validate.enable": true
 }
-

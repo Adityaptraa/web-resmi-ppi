@@ -904,14 +904,31 @@ export default function PpiRoadshow27Page() {
             )}
           </div>
 
-          <input
-            type="text"
-            maxLength={100}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value.slice(0, 100))}
-            placeholder="Cari nama atau kode peserta (maks. 100)..."
-            className="w-full sm:w-64 px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:border-red-500 focus:outline-none"
-          />
+          <div className="relative w-full sm:w-64">
+            <input
+              type="text"
+              maxLength={100}
+              value={searchQuery.slice(0, 100)}
+              onChange={(e) => setSearchQuery(e.target.value.slice(0, 100))}
+              onPaste={(e) => {
+                const pasted = e.clipboardData.getData("text") || "";
+                if ((searchQuery.length + pasted.length) > 100) {
+                  e.preventDefault();
+                  const remaining = 100 - searchQuery.length;
+                  if (remaining > 0) {
+                    setSearchQuery((prev) => (prev + pasted.slice(0, remaining)).slice(0, 100));
+                  }
+                }
+              }}
+              placeholder="Cari nama atau kode peserta (maks. 100)..."
+              className="w-full pl-3.5 pr-14 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:border-red-500 focus:outline-none"
+            />
+            {searchQuery.length > 0 && (
+              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-zinc-500 font-mono">
+                {searchQuery.length}/100
+              </span>
+            )}
+          </div>
         </div>
 
         {/* =================================================================== */}
