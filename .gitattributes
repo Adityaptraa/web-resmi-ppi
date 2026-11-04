@@ -1,0 +1,21 @@
+# GitHub Linguist Configuration
+# Prioritize TypeScript as dominant repository language
+
+# Exclude legacy HTML and CSS from language stats
+*.html linguist-detectable=false
+*.html linguist-vendored=true
+*.css linguist-detectable=false
+*.css linguist-vendored=true
+
+# Exclude legacy roadshow and umum archives
+roadshow/** linguist-detectable=false
+roadshow/** linguist-vendored=true
+roadshow/** linguist-documentation=true
+umum/** linguist-detectable=false
+umum/** linguist-vendored=true
+umum/** linguist-documentation=true
+
+# Ensure TypeScript and TSX are explicitly counted as primary code
+*.ts linguist-detectable=true
+*.tsx linguist-detectable=true
+

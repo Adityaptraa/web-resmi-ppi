@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model UserAccount {
+  id               String   @id @default(cuid())
+  username         String   @unique
+  email            String   @default("")
+  phone            String   @default("")
+  passwordHash     String
+  fullName         String
+  angkatan         String   @default("-")
+  role             String   @default("USER") // SUPER_ADMIN | ADMIN | USER
+  permissions      String   @default("{}")   // JSON: { inputBB, inputTB, inputRegistrasi, manageLanding, manageMerchandise, manageReviews, manageRoadshow }
+  assignedSchoolId String?
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model LoginAttempt {
+  id              String    @id @default(cuid())
+  ipOrFingerprint String    @unique
+  attempts        Int       @default(0)
+  lockedUntil     DateTime?
+  lastAttemptAt   DateTime  @default(now())
+}
+
+model SecurityAuditLog {
+  id        String   @id @default(cuid())
+  actorName String
+  actorRole String
+  action    String
+  details   String
+  ipAddress String   @default("local")
+  createdAt DateTime @default(now())
+}
+
+model LandingConfig {
+  id             String   @id @default("default")
+  heroTitle      String   @default("GENERASI EMAS INDONESIA")
+  heroSubtitle   String   @default("Purna Paskibraka Indonesia Kabupaten Probolinggo. Membangun Karakter Kedisiplinan, Kepemimpinan, dan Jiwa Nasionalisme Pemuda Masa Depan.")
+  heroCtaText    String   @default("Visit Profile BPIP")
+  heroCtaUrl     String   @default("https://paskibraka.bpip.go.id/dashboard")
+  waAdminMerch   String   @default("6282228368042")
+  bukberTitle    String   @default("BUKBER PPI KAB. PROBOLINGGO 2026")
+  bukberDesc     String   @default("Ingatkah saat kita berpanas di bawah terik yang sama? Kini, saatnya kita duduk melingkar dalam sejuknya kekeluargaan. Bukan sekadar tentang menu berbuka, tapi tentang cerita yang takkan pernah usai.")
+  bukberDate     String   @default("Sabtu, 28 Feb 2026 | 16:00 WIB - Selesai")
+  bukberLocation String   @default("SMKN 2 Kraksaan")
+  bukberHtm      String   @default("Rp 30.000")
+  updatedAt      DateTime @updatedAt
+}
+
+model LandingItem {
+  id           String   @id @default(cuid())
+  section      String   // ROADSHOW_GALLERY | MERCHANDISE | BUKBER_GALLERY | DOCUMENT_PDF
+  title        String
+  subtitle     String   @default("")
+  description  String   @default("")
+  price        String   @default("")
+  imageUrl     String   @default("")
+  fileUrl      String   @default("")
+  metaLocation String   @default("")
+  metaDay      String   @default("")
+  metaDate     String   @default("")
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  nama      String
+  kategori  String   @default("umum") // umum | ppi | user_roadshow
+  angkatan  String   @default("-")
+  rating    Int      @default(5)
+  pesan     String
+  source    String   @default("LANDING") // LANDING | LOGOUT_ROADSHOW
+  isVisible Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model RoadshowSchool {
+  id              String              @id @default(cuid())
+  firebaseKey     String?             @unique
+  namaSekolah     String
+  lokasi          String              @default("Kab. Probolinggo")
+  tanggal         String              @default("-")
+  statusPenilaian String              @default("Dibuka") // Dibuka | Ditutup
+  minBeratCewek   Float               @default(45)
+  maxBeratCewek   Float               @default(60)
+  minTinggiCewek  Float               @default(155)
+  maxTinggiCewek  Float               @default(170)
+  minBeratCowok   Float               @default(55)
+  maxBeratCowok   Float               @default(75)
+  minTinggiCowok  Float               @default(165)
+  maxTinggiCowok  Float               @default(180)
+  createdAt       DateTime            @default(now())
+  candidates      RoadshowCandidate[]
+}
+
+model RoadshowCandidate {
+  id           String         @id @default(cuid())
+  firebaseKey  String?        @unique
+  kodePeserta  String
+  nama         String
+  jenisKelamin String         // Cewek | Cowok
+  schoolId     String
+  school       RoadshowSchool @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  beratBadan   Float          @default(0)
+  tinggiBadan  Float          @default(0)
+  hasilLulus   Boolean        @default(false)
+  statusTayang Boolean        @default(false)
+  keterangan   String         @default("")
+  updatedBy    String         @default("System")
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
