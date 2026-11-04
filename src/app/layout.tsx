@@ -8,11 +8,12 @@ export const metadata: Metadata = {
     "Portal resmi pusat informasi kegiatan, dokumentasi roadshow sekolah, serta verifikasi kelulusan pra-seleksi calon Paskibraka Kabupaten Probolinggo.",
   icons: {
     icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.png", type: "image/png" },
       { url: "/logo.jpg", type: "image/jpeg" },
-      { url: "/icon.jpg", type: "image/jpeg" },
     ],
-    shortcut: "/logo.jpg",
-    apple: "/logo.jpg",
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
   },
   openGraph: {
     title: "Paskibraka Kabupaten Probolinggo — Official Website",
@@ -49,10 +50,10 @@ export default function RootLayout({
   return (
     <html lang="id" className="scroll-smooth">
       <head>
-        {/* Favicon Browser Tab Resmi */}
-        <link rel="icon" href="/logo.jpg" type="image/jpeg" />
-        <link rel="shortcut icon" href="/logo.jpg" type="image/jpeg" />
-        <link rel="apple-touch-icon" href="/logo.jpg" />
+        {/* Favicon Browser Tab Resmi (ICO, PNG, Apple Touch) */}
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/icon.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
         {/* WhatsApp & Social Media Open Graph Image Preview */}
         <meta property="og:type" content="website" />
