@@ -505,11 +505,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Reset attempts on successful login
-    await Promise.all([
-      prisma.loginAttempt.delete({ where: { ipOrFingerprint: ipKey } }).catch(() => {}),
-      prisma.loginAttempt.delete({ where: { ipOrFingerprint: userKey } }).catch(() => {}),
-    ]);
+    // Reset attempts on successful login cleanly using deleteMany to avoid not-found errors
+    await prisma.loginAttempt
+      .deleteMany({
+        where: {
+          ipOrFingerprint: { in: [ipKey, userKey] },
+        },
+      })
+      .catch(() => {});
 
     // For USER (Panitia), require fresh QR scan from Super Admin on each login session
     let effectiveAssignedSchoolId = user.assignedSchoolId;
